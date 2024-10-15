@@ -9,30 +9,27 @@ load_dotenv()
 
 # 定时任务设置
 timer_task_config = {
-    "timer_task_1": {  # 键名为任务名，用于查询，可自定义
-        'interval': 15,  # 定时器间隔(秒)
-        'client_id': 'client_01',  # 指定执行命令的OC客户端id
-        'commands': [  # 远程执行的命令列表
-            "return 114514",
-        ],
-        'cache': False,  # 是否缓存数据，即创建新任务时上次任务的数据不会清空
-        'handle': None,  # 命令执行后的处理函数，results = handle(results: list)，应有返回值，不需要则None
-        'callback': test,  # 命令执行后的回调函数，callback(results: list)，其中results是经过处理过的(handle)，不需要则None
-    },
+    # "timer_task_1": {  # 键名为任务名，用于查询，可自定义
+    #     'interval': 15,  # 定时器间隔(秒)
+    #     'client_id': 'client_01',  # 指定执行命令的OC客户端id
+    #     'commands': [  # 远程执行的命令列表
+    #         "return 114514",
+    #     ],
+    #     # 命令执行后的回调函数，callback(results: list)
+    #     'callback': test,
+    # },
 }
 
 
 # 任务组设置，该任务执行结束后会调用callback
 task_config = {
-    "echo": {  # 键名为任务名，用于发起任务，可自定义
-        'client_id': 'client_01',  # 指定执行命令的OC客户端id，不指定则None
+    "getCpuList": {  # 键名为任务名，用于发起任务，可自定义
+        'client_id': 'client_01',  # 指定执行命令的OC客户端id
         'commands': [  # 远程执行的命令列表
-            "return echo(114514)",
+            "return ae.getCpuList(true)",
         ],
-        'cache': False,  # 是否缓存数据，即创建新任务时上次任务的数据不会清空
-        'handle': None,  # 命令执行后的处理函数，results = handle(results: list)，应有返回值，不需要则None
-        'callback': test,  # 命令执行后的回调函数，callback(results: list)，其中results是经过处理过的(handle)，不需要则None
-        'chunked': False,  # 是否启用分块上传，True 表示启用，False 表示不启用（启用后commands只能为有1条命令，且上报数据是一个列表，后端将会把上报的列表合并）
+        # 命令执行后的回调函数，callback(results: list)，不需要则None
+        'callback': None,
     },
 }
 
