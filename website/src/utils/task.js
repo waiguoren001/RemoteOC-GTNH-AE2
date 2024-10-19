@@ -8,7 +8,7 @@ const fetchStatus = async (task_id, handleResult, interval = 1000, pollingContro
         const response = await Requests.get('/api/cmd/status', { task_id });
         const data = response.data;
         if (data.code === 200) {
-            if (data.data.status === 'completed') {
+            if (data.data.status === 'completed' || data.data.results) {
                 if (handleResult) handleResult(data.data);
                 if (pollingController) {
                     pollingController.stop();
@@ -21,11 +21,16 @@ const fetchStatus = async (task_id, handleResult, interval = 1000, pollingContro
                 }
             }
         } else {
+            if (pollingController) {
+                pollingController.stop();
+            }
             ElMessage.error(`查询任务失败: ${data.code}, ${data.message ? data.message : data}`);
             console.error(data);
         }
     } catch (error) {
-        console.log(error)
+        if (pollingController) {
+            pollingController.stop();
+        }
         ElMessage.error(`查询任务失败: ${error}`);
         console.error(`Error fetching task status: ${error}`);
     }

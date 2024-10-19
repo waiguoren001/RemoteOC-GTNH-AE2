@@ -1,7 +1,26 @@
 local component = require("component")
+local base64 = require("lib/base64")
 local me = component.me_controller
 
 ae = {}
+
+
+local function parseItem(items)
+    if items == nil then return nil end
+    local data = {}
+    for i, item in pairs(items) do
+        if item.hasTag then
+            item.tag = base64.encode(item.tag)
+        end
+        table.insert(data, item)
+        
+        -- 每处理一定数量的项目后挂起一次，避免 "too long without yielding" 错误
+        if i % 50 == 0 then
+            os.sleep(0)
+        end
+    end
+    return data
+end
 
 local function getSimpleInfo(cpu)
     return {
@@ -77,14 +96,14 @@ end
 function ae.getCpuList(detail)
     -- 获取所有CPU信息
     local cpus = me.getCpus()
-    if cpus == nil then return {} end
+    if cpus == nil then return { message = "no cpus" } end
     local result = {}
     for _, cpu in pairs(cpus) do
         local simple = getSimpleInfo(cpu)
         if detail then simple.cpu = getDetailInfo(cpu) end
         table.insert(result, simple)
     end
-    return result
+    return { message = "success", data = result}
 end
 
 function ae.getCpuDetail(cpuName)
@@ -98,7 +117,7 @@ function ae.getCpuDetail(cpuName)
             return result
         end
     end
-    return nil
+    return { message = "no cpus" }
 end
 
 function ae.requestItem(name, damage, amount, cpuName)
@@ -136,7 +155,7 @@ function ae.requestItem(name, damage, amount, cpuName)
                 result = craftable.request(amount, nil, cpuName)
             end
         else
-            return cpuInfo
+            return { message = "success", data = cpuInfo }
         end
     end
 
@@ -158,17 +177,23 @@ function ae.requestItem(name, damage, amount, cpuName)
     return { message = "success", data = res }
 end
 
-function ae.getAllItems(filter)
-    -- 获取所有物品
+function ae.getAllSilempleItems(filter)
+    -- 获取所有物品简单信息
     local items = me.getItemsInNetwork(filter)
-    return removeEmptyItem(items)
+    return { message = "success", data = removeEmptyItem(items) }
+end
+
+function ae.getAllItems(filter)
+    -- 获取所有物品信息
+    local items = me.getItemsInNetwork(filter)
+    return { message = "success", data = parseItem(items) }
 end
 
 function ae.getAllCraftables()
     -- 获取所有可合成的物品
 
     local items = me.getItemsInNetwork()
-    if not items then return {} end
+    if not items then return { message = "not items" } end
 
     local result = {}
     for _, item in pairs(items) do
@@ -182,7 +207,7 @@ function ae.getAllCraftables()
         end
     end
 
-    return result
+    return { message = "success", data = result }
 end
 
 function ae.cancelCraftingByCpuName(cpuName)

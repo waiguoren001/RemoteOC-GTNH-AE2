@@ -24,7 +24,7 @@ const itemUtil = {
                 if (!itemDatabase[name]) return null
             }
             const damage = (obj["damage"] ? obj["damage"] : 0) + ""
-            console.log(name, damage)
+            // console.log(name, damage)
             return itemDatabase[name][damage]
         }
         return null
@@ -33,7 +33,7 @@ const itemUtil = {
         let item = itemUtil.getItem(obj);
         let name = item && item.tr ? item.tr : obj.label;
         if (name === "???液滴") {
-            name = [obj.label.replaceAll('drop of ', '')] + '液滴'
+            name = fluidDatabase[obj.label.replaceAll('drop of ', '')] + '液滴'
         }
         return name
     },

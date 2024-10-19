@@ -28,7 +28,8 @@ task_config = {
         'commands': [  # 远程执行的命令列表
             "return ae.getCpuList(true)",
         ],
-        # 命令执行后的回调函数，callback(results: list)，不需要则None
+        'cache': True,
+        'handle': None,
         'callback': None,
     },
     "getCpuList": {  # 获取CPU简易信息列表
@@ -36,6 +37,8 @@ task_config = {
         'commands': [
             "return ae.getCpuList()",
         ],
+        'cache': True,
+        'handle': None,
         'callback': None,
     },
     "getAllItems": {  # 获取AE网络里所有物品信息
@@ -43,6 +46,18 @@ task_config = {
         'commands': [
             "return ae.getAllItems()",
         ],
+        'cache': True,
+        'handle': None,
+        'callback': None,
+        'chunked': True,  # 由于数据量过大，启用分块上传。
+    },
+    "getAllSilempleItems": {  # 获取AE网络里所有物品信息
+        'client_id': 'client_01',
+        'commands': [
+            "return ae.getAllSilempleItems()",
+        ],
+        'cache': True,
+        'handle': None,
         'callback': None,
     },
     "getAllCraftables": {  # 获取AE网络里所有可合成的物品信息
@@ -50,6 +65,8 @@ task_config = {
         'commands': [
             "return ae.getAllCraftables()",
         ],
+        'cache': True,
+        'handle': None,
         'callback': None,
     },
     "getAllCraftablesAndCpus": {  # 获取AE网络里所有可合成的物品信息和CPU信息
@@ -58,6 +75,8 @@ task_config = {
             "return ae.getAllCraftables()",
             "return ae.getCpuList()"
         ],
+        'cache': True,
+        'handle': None,
         'callback': None,
     },
 }

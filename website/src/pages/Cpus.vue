@@ -12,7 +12,7 @@
             <el-row :gutter="20" style="height: 100%; width: 100%;">
                 <el-col :span="6" style="height: 100%;">
                     <el-card class="box-card">
-                        <el-menu default-active="0" @select="handleCpuSelect">
+                        <el-menu default-active="0" v-model="cpuSelected" @select="handleCpuSelect">
                             <el-menu-item v-for="(cpu, index) in cpuList" :key="index" :index="index.toString()">
                                 <template #default>
                                     <div class="cpu-row">
@@ -75,6 +75,7 @@ export default {
             lastCpuUpdate: "",
             cpuList: [],
             currentCpu: { items: [] },
+            cpuSelected: 0,
             pollingController: null,
         };
     },
@@ -143,7 +144,7 @@ export default {
             data.storedItems.forEach(item => {
                 const key = `${item.name}:${item.damage}`;
                 if (itemMap.has(key)) {
-                    itemMap.get(key).stock = item.size;
+                    itemMap.get(key).stored = item.size;
                 } else {
                     itemMap.set(key, {
                         label: itemUtil.getName(item),
@@ -166,14 +167,20 @@ export default {
                 try {
                     let result = JSON.parse(data.result[0]);
                     console.log(result);
+
+                    if (result.message === undefined || result.message !== 'success') {
+                        this.$message.warning(result.message ? result.message : "未知错误");
+                        return
+                    }
                     
                     this.lastCpuUpdate = data.completed_time ? data.completed_time.split(".")[0].replace("T", " ") : '未知';
 
                     const previousCpuName = this.currentCpu?.name;
                     this.currentCpu = { name: undefined, items: [] };
 
+                    let cpus = result.data;
                     let cpuList = [];
-                    for (let cpu of result) {
+                    for (let cpu of cpus) {
                         let name = cpu.name !== "" ? cpu.name : `CPU #${cpuList.length + 1}`;
                         cpuList.push({
                             name: name,
@@ -186,11 +193,13 @@ export default {
 
                         if (previousCpuName && previousCpuName === name) {
                             this.currentCpu = cpuList[cpuList.length - 1];
+                            this.cpuSelected = cpuList.length - 1;
                         }
                     }
 
                     if (!this.currentCpu.name) {
                         this.currentCpu = cpuList[0];
+                        this.cpuSelected = 0;
                     }
 
                     this.cpuList = cpuList;
