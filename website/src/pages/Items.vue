@@ -15,7 +15,7 @@
                     <!-- <el-col v-for="(item, index) in items" :key="index" :span="4"> -->
                     <el-card v-for="(item, index) in items" :key="index" class="item-card" shadow="hover">
                         <div class="image-wrapper">
-                            <img :src="item.image || ''" class="component-image" />
+                            <img :src="item.image || ''" class="component-image" loading="lazy"/>
                             <div class="item-info">
                                 <div class="ellipsis" :title="item.title">{{ item.title }}</div>
                                 <div class="words" :title="item.label">{{ item.label }}</div>
@@ -27,6 +27,9 @@
                                         <div v-for="(value, key, index) in item.data" :key="index" :title="value"
                                             @click="copyToClipboard(value)" class="words">
                                             {{ key }}: {{ value }}
+                                        </div>
+                                        <div v-for="(info, index) in item.tooltip" :key="index">
+                                            {{ info }}
                                         </div>
                                         <div style="font-size: 10px; color: #aaa;">点击复制属性值</div>
                                     </template>
@@ -104,7 +107,6 @@ export default {
             if (data.result) {
                 try {
                     let result = data.result;
-                    console.log(nbt)
                     this.lastUpdate = data.completed_time ? data.completed_time.split(".")[0].replace("T", " ") : '未知';
                     let items = result;
                     let new_items = []
@@ -119,11 +121,13 @@ export default {
                                 }
                             })
                         }
+                        let item_ = itemUtil.getItem(item)
                         let new_item = {
-                            image: itemUtil.getIcon(item),
-                            title: itemUtil.getName(item),
+                            image: itemUtil.getItemIcon(item_),
+                            title: itemUtil.getName(item_) || item.label,
                             label: item.label,
                             size: item.size,
+                            tooltip: item_ && item_.tooltip || [],
                             isCraftable: item.isCraftable,
                             data: data
                         }

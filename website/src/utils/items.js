@@ -1,16 +1,4 @@
-import itemDatabase from "./ItemDatabase.json"
-import fluidDatabase from "./FluidDatabase.json"
-
-function getIcon(obj, prefixPath) {
-    if (itemUtil.isItem(obj)) {
-        const item = itemUtil.getItem(obj)
-        if (item && item["maxDurability"] !== 1) {
-            return prefixPath + obj["name"].replaceAll("|", "_").replaceAll(":", "/") + "/1.png"
-        }
-        return prefixPath + obj["name"].replaceAll("|", "_").replaceAll(":", "/") + "/" + obj["damage"] + ".png"
-    }
-    return prefixPath + "none.png"
-}
+import items from "./items.json"
 
 const itemUtil = {
     isItem: (obj) => {
@@ -19,26 +7,30 @@ const itemUtil = {
     getItem: (obj) => {
         if (itemUtil.isItem(obj)) {
             let name = obj["name"]
-            if (!itemDatabase[name]) {
+            if (!items[name]) {
                 name = name.replaceAll("|", "_")
-                if (!itemDatabase[name]) return null
+                if (!items[name]) return null
             }
             const damage = (obj["damage"] ? obj["damage"] : 0) + ""
-            // console.log(name, damage)
-            return itemDatabase[name][damage]
+            return items[name][damage]
         }
         return null
     },
-    getName: (obj) => {
-        let item = itemUtil.getItem(obj);
-        let name = item && item.tr ? item.tr : obj.label;
-        if (name === "???液滴") {
-            name = fluidDatabase[obj.label.replaceAll('drop of ', '')] + '液滴'
+    getName: (item) => {
+        if (item) {
+            let name = item && item.zh ? item.zh : item.en;
+            return name
         }
-        return name
+        return null
     },
-    getIcon: (obj) => {
-        return getIcon(obj, "img/items/")
+    getItemIcon: (item) => {
+        if (item) {
+            return "img/items/" + item.img_path
+        }
+        return "img/default.png"
+    },
+    getFluidIcon: (obj) => {
+
     }
 }
 
