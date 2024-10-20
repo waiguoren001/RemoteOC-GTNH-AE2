@@ -16,8 +16,7 @@
     "pako": "^2.1.0",
     "vue": "^3.2.25",
     "vue-echarts": "^7.0.3",
-    "vue-router": "4",
-    "vue-virtual-scroller": "^1.1.2"
+    "vue-router": "4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",

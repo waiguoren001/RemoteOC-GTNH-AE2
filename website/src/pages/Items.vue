@@ -1,6 +1,6 @@
 <template>
     <el-container style="height: 100%;" v-loading="loading">
-        <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header">
+        <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header-item">
             <el-card class="control-card" shadow="hover">
                 <div class="control-bar">
                     <span>最近更新时间: {{ lastUpdate }}</span>
@@ -8,14 +8,25 @@
                 </div>
             </el-card>
         </el-header>
-        <el-main style="width: 100%;">
+        <el-main style="width: 100%; overflow: hidden;">
             <el-card class="box-card">
                 <div class="card-container">
-                    <!-- <el-row :gutter="20"> -->
-                    <!-- <el-col v-for="(item, index) in items" :key="index" :span="4"> -->
-                    <el-card v-for="(item, index) in items" :key="index" class="item-card" shadow="hover">
+                    <el-card v-for="(item, index) in showItems" :key="index" class="item-card" shadow="hover">
                         <div class="image-wrapper">
-                            <img :src="item.image || ''" class="component-image" loading="lazy"/>
+                            <!-- <img :src="item.image || ''" class="component-image" /> -->
+                            <el-image :src="item.image || ''" class="component-image" :alt="item.title" lazy>
+                                <template #placeholder>
+                                    <el-skeleton :loading="true" animated class="component-image">
+                                        <template #template>
+                                            <el-skeleton-item variant="image" style="width: 48px; height: 48px" />
+                                        </template>
+                                    </el-skeleton>
+                                </template>
+                                <template #error>
+                                    <el-icon><icon-picture /></el-icon>
+                                </template>
+                            </el-image>
+
                             <div class="item-info">
                                 <div class="ellipsis" :title="item.title">{{ item.title }}</div>
                                 <div class="words" :title="item.label">{{ item.label }}</div>
@@ -41,15 +52,20 @@
                                     <template #content>
                                         下单制作
                                     </template>
-                                    <el-icon size="large" class="craft-icon" @click="craftItem(item.data.name, item.data.damage)">
+                                    <el-icon size="large" class="craft-icon"
+                                        @click="craftItem(item.data.name, item.data.damage)">
                                         <GoodsFilled />
                                     </el-icon>
                                 </el-tooltip>
                             </div>
                         </div>
                     </el-card>
-                    <!-- </el-col> -->
-                    <!-- </el-row> -->
+                </div>
+                <div class="pagination-container">
+                    <el-pagination v-model:current-page="page.current" v-model:page-size="page.size"
+                        :page-sizes="[50, 100, 200, 400]" size="small" layout="total, sizes, prev, pager, next, jumper"
+                        :total="items.length" @size-change="handlePaginationChange"
+                        @current-change="handlePaginationChange" />
                 </div>
             </el-card>
         </el-main>
@@ -64,22 +80,19 @@ import nbt from "@/utils/nbt"
 
 export default {
     name: 'Items',
+    components: {},
     data() {
         return {
             loading: true,
             headerLoading: false,
             headerLoadingText: "请求已发送，等待客户端响应... Task id: getAllItems",
             lastUpdate: "",
-            items: [
-                {
-                    name: "test",
-                    label: "test",
-                    size: "test",
-                    data: {
-                        tag: "123"
-                    }
-                }
-            ],
+            items: [],
+            showItems: [],
+            page: {
+                size: parseInt(localStorage.getItem('pageSize')) || 50,
+                current: 1,
+            },
             pollingController: null,
         };
     },
@@ -89,6 +102,12 @@ export default {
         this.startPolling("getAllItems");
     },
     methods: {
+        handlePaginationChange() {
+            localStorage.setItem('pageSize', this.page.size);
+            const start = (this.page.current - 1) * this.page.size;
+            const end = start + this.page.size;
+            this.showItems = this.items.slice(start, end);
+        },
         startPolling(taskId) {
             this.pollingController = createPollingController();
             fetchStatus(taskId, this.handleTaskResult, 1000, this.pollingController);
@@ -129,12 +148,12 @@ export default {
                             size: item.size,
                             tooltip: item_ && item_.tooltip || [],
                             isCraftable: item.isCraftable,
-                            data: data
+                            data: data,
                         }
                         new_items.push(new_item);
                     }
                     this.items = new_items;
-
+                    this.handlePaginationChange();
                 } catch (e) {
                     console.error(e, data);
                     this.$message.warning(e);
@@ -184,18 +203,36 @@ export default {
     padding: 8px;
 }
 
-.control-header {
+.control-header-item {
     width: 100%;
     margin-top: 10px;
 }
 
-.control-header .el-loading-spinner .circular {
+.control-header-item .el-card__body {
+    height: 100%;
+    padding: 8px;
+}
+
+.control-header-item .el-loading-spinner .circular {
     height: 24px;
     width: 24px;
 }
 
 .el-popper {
     max-width: 400px;
+}
+
+.box-card {
+    height: 100%;
+}
+
+.box-card .el-card__body {
+    height: 100%;
+}
+
+.el-pagination {
+    margin-top: 6px;
+    justify-content: flex-end;
 }
 </style>
 
@@ -205,12 +242,21 @@ export default {
 }
 
 .card-container {
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    /* 控制卡片之间的间距 */
     justify-content: flex-start;
+    height: calc(100% - 50px);
 }
+
+.pagination-container {
+    /* width: 100%; */
+    margin: auto 0;
+    height: 36px;
+    padding-right: 10px;
+}
+
 
 .control-card {
     padding: 10px;
@@ -221,16 +267,6 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.box-card {
-    height: 100%;
-    overflow-y: auto;
-}
-
-.box-card::-webkit-scrollbar {
-    display: none;
-    /* 隐藏滚动条 */
 }
 
 .ellipsis {

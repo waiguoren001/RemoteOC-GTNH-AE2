@@ -8,7 +8,10 @@ const fetchStatus = async (task_id, handleResult, interval = 1000, pollingContro
         const response = await Requests.get('/api/cmd/status', { task_id });
         const data = response.data;
         if (data.code === 200) {
-            if (data.data.status === 'completed' || data.data.results) {
+            if (data.data.result && data.data.result != []) {
+                if (handleResult) handleResult(data.data);
+            }
+            if (data.data.status === 'completed') {
                 if (handleResult) handleResult(data.data);
                 if (pollingController) {
                     pollingController.stop();

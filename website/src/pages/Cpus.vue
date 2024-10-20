@@ -42,7 +42,20 @@
                             <el-col v-for="(item, index) in currentCpu.items" :key="index" :span="8">
                                 <el-card :class="'item-card ' + getItemCardClass(item)" shadow="hover">
                                     <div class="image-wrapper">
-                                        <img :src="item.image || ''" class="component-image" />
+                                        <el-image :src="item.image || ''" class="component-image" :alt="item.title"
+                                            lazy>
+                                            <template #placeholder>
+                                                <el-skeleton :loading="true" animated class="component-image">
+                                                    <template #template>
+                                                        <el-skeleton-item variant="image"
+                                                            style="width: 48px; height: 48px" />
+                                                    </template>
+                                                </el-skeleton>
+                                            </template>
+                                            <template #error>
+                                                <el-icon><icon-picture /></el-icon>
+                                            </template>
+                                        </el-image>
                                         <div class="item-info">
                                             <div class="ellipsis" style="font-size: 20px;">{{ item.label }}</div>
                                             <div v-if="item.active">正在合成: {{ item.active }}</div>
@@ -115,12 +128,13 @@ export default {
             // 处理 activeItems
             data.activeItems.forEach(item => {
                 const key = `${item.name}:${item.damage}`;
+                let item_ = itemUtil.getItem(item)
                 itemMap.set(key, {
-                    label: itemUtil.getName(item),
+                    label: itemUtil.getName(item_),
                     active: item.size,
                     pending: 0,
                     stored: 0,
-                    image: itemUtil.getIcon(item)
+                    image: itemUtil.getItemIcon(item_)
                 });
             });
 
@@ -130,12 +144,13 @@ export default {
                 if (itemMap.has(key)) {
                     itemMap.get(key).pending = item.size;
                 } else {
+                    let item_ = itemUtil.getItem(item)
                     itemMap.set(key, {
-                        label: itemUtil.getName(item),
+                        label: itemUtil.getName(item_),
                         active: 0,
                         pending: item.size,
                         stored: 0,
-                        image: itemUtil.getIcon(item)
+                        image: itemUtil.getItemIcon(item_)
                     });
                 }
             });
@@ -146,12 +161,13 @@ export default {
                 if (itemMap.has(key)) {
                     itemMap.get(key).stored = item.size;
                 } else {
+                    let item_ = itemUtil.getItem(item)
                     itemMap.set(key, {
-                        label: itemUtil.getName(item),
+                        label: itemUtil.getName(item_),
                         active: 0,
                         pending: 0,
                         stored: item.size,
-                        image: itemUtil.getIcon(item)
+                        image: itemUtil.getItemIcon(item_)
                     });
                 }
             });
@@ -166,13 +182,12 @@ export default {
             if (data.result) {
                 try {
                     let result = JSON.parse(data.result[0]);
-                    console.log(result);
 
                     if (result.message === undefined || result.message !== 'success') {
                         this.$message.warning(result.message ? result.message : "未知错误");
                         return
                     }
-                    
+
                     this.lastCpuUpdate = data.completed_time ? data.completed_time.split(".")[0].replace("T", " ") : '未知';
 
                     const previousCpuName = this.currentCpu?.name;
@@ -197,6 +212,7 @@ export default {
                         }
                     }
 
+                    // 当选择的CPU不存在默认选择第一个CPU
                     if (!this.currentCpu.name) {
                         this.currentCpu = cpuList[0];
                         this.cpuSelected = 0;
