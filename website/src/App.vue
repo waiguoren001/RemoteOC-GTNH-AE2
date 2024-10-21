@@ -15,10 +15,11 @@
             <el-aside width="200px" style="height: calc(100vh - 60px);">
                 <el-menu default-active="index" class="el-menu-vertical-demo" @select="handleSelect"
                     style="height: 100%;">
-                    <el-menu-item index="index">主页</el-menu-item>
-                    <el-menu-item index="items">物品</el-menu-item>
-                    <el-menu-item index="cpus">合成处理器</el-menu-item>
-                    <el-menu-item index="settings">设置</el-menu-item>
+                    <el-menu-item index="Index">主页</el-menu-item>
+                    <el-menu-item index="Items">物品</el-menu-item>
+                    <el-menu-item index="Cpus">合成处理器</el-menu-item>
+                    <el-menu-item index="Tasks">任务</el-menu-item>
+                    <el-menu-item index="Settings">设置</el-menu-item>
                 </el-menu>
             </el-aside>
             <el-main style="height: calc(100vh - 60px); padding: 0;">

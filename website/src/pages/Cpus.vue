@@ -114,7 +114,7 @@ export default {
         },
         startPolling(taskId) {
             this.pollingController = createPollingController();
-            fetchStatus(taskId, this.handleTaskResult, 1000, this.pollingController);
+            fetchStatus(taskId, this.handleTaskResult, this.handleTaskComplete, 1000, this.pollingController);
         },
         stopPolling() {
             if (this.pollingController) {
@@ -174,10 +174,10 @@ export default {
 
             return Array.from(itemMap.values());
         },
+
         handleTaskResult(data) {
             console.log('Task result:', data);
             this.loading = false;
-            this.headerLoading = false;
 
             if (data.result) {
                 try {
@@ -227,10 +227,14 @@ export default {
                 this.$message.warning(`返回数据为空!`);
             }
         },
+        handleTaskComplete() {
+            this.headerLoading = false;
+        },
         getCpuList() {
             this.headerLoading = true;
-            addTask("getCpuDetailList")
-            this.startPolling("getCpuDetailList");
+            addTask("getCpuDetailList", null, () => {
+                this.startPolling("getCpuDetailList")
+            })
         }
     }
 };

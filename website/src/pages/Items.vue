@@ -3,7 +3,25 @@
         <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header-item">
             <el-card class="control-card" shadow="hover">
                 <div class="control-bar">
-                    <span>最近更新时间: {{ lastUpdate }}</span>
+                    <div style="display: flex;">
+                        <el-segmented v-model="showCraft" :options="['全部', '可下单']" size="default" />
+                        <el-input v-model="searchText" style="margin-left: 10px; width: 40vw; max-width: 400px;"
+                            placeholder="请输入信息以查询">
+                            <template #suffix>
+                                <el-icon class="el-input__icon">
+                                    <search />
+                                </el-icon>
+                            </template>
+                            <template #prepend>
+                                <el-select v-model="searchType" placeholder="查询类型" style="width: 100px">
+                                    <el-option label="物品名" value="title" />
+                                    <el-option label="标签名" value="label" />
+                                    <el-option label="name" value="name" />
+                                </el-select>
+                            </template>
+                        </el-input>
+                    </div>
+
                     <el-button type="primary" @click="getItems">获取物品信息</el-button>
                 </div>
             </el-card>
@@ -11,7 +29,8 @@
         <el-main style="width: 100%; overflow: hidden;">
             <el-card class="box-card">
                 <div class="card-container">
-                    <el-card v-for="(item, index) in showItems" :key="index" class="item-card" shadow="hover">
+                    <el-card v-for="(item, index) in showItems" :key="index" class="item-card" style="height: 116px;"
+                        shadow="hover">
                         <div class="image-wrapper">
                             <!-- <img :src="item.image || ''" class="component-image" /> -->
                             <el-image :src="item.image || ''" class="component-image" :alt="item.title" lazy>
@@ -53,7 +72,7 @@
                                         下单制作
                                     </template>
                                     <el-icon size="large" class="craft-icon"
-                                        @click="craftItem(item.data.name, item.data.damage)">
+                                        @click="openCraftDialog(item.title, item.data.name, item.data.damage)">
                                         <GoodsFilled />
                                     </el-icon>
                                 </el-tooltip>
@@ -62,19 +81,49 @@
                     </el-card>
                 </div>
                 <div class="pagination-container">
+                    <span>最近更新时间: {{ lastUpdate }}</span>
                     <el-pagination v-model:current-page="page.current" v-model:page-size="page.size"
                         :page-sizes="[50, 100, 200, 400]" size="small" layout="total, sizes, prev, pager, next, jumper"
-                        :total="items.length" @size-change="handlePaginationChange"
+                        :total="page.total" @size-change="handlePaginationChange"
                         @current-change="handlePaginationChange" />
                 </div>
             </el-card>
         </el-main>
+        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" width="500" align-center>
+            <el-form :model="craft">
+                <el-form-item label="下单数量">
+                    <el-input v-model="craft.amount" type="number" placeholder="请输入下单数量"/>
+                </el-form-item>
+                <el-form-item label="选择CPU">
+                    <el-tooltip>
+                        <template #content>
+                            暂不支持
+                        </template>
+                        <el-select-v2 ref="select" :disabled="craft.cpuOptions.length === 0" v-model="craft.selectCpu"
+                            :options="craft.cpuOptions" placeholder="自动分配" style="width: 280px">
+                            <template #footer>
+                                <span>仅能选择已命名且空闲的CPU</span>
+                            </template>
+                        </el-select-v2>
+                    </el-tooltip>
 
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="showCraftDialog = false">取消</el-button>
+                    <el-button type="primary" @click="craftItem" :loading="craft.btnLoading">
+                        确认
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </el-container>
 </template>
 
 <script>
-import { fetchStatus, addTask, createPollingController } from '@/utils/task'
+import { fetchStatus, addTask, createCraftTask, createPollingController } from '@/utils/task'
+import { Search } from '@element-plus/icons-vue'
 import itemUtil from "@/utils/items";
 import nbt from "@/utils/nbt"
 
@@ -87,13 +136,27 @@ export default {
             headerLoading: false,
             headerLoadingText: "请求已发送，等待客户端响应... Task id: getAllItems",
             lastUpdate: "",
+            showCraft: "全部",
+            searchType: "title",
+            searchText: "",
             items: [],
             showItems: [],
             page: {
+                total: 0,
                 size: parseInt(localStorage.getItem('pageSize')) || 50,
                 current: 1,
             },
             pollingController: null,
+            showCraftDialog: false,
+            craftDialogTitle: "下单",
+            craft: {
+                name: null,
+                damage: null,
+                amount: 1,
+                btnLoading: false,
+                selectCpu: null,
+                cpuOptions: [],
+            }
         };
     },
     created() {
@@ -104,13 +167,14 @@ export default {
     methods: {
         handlePaginationChange() {
             localStorage.setItem('pageSize', this.page.size);
-            const start = (this.page.current - 1) * this.page.size;
-            const end = start + this.page.size;
-            this.showItems = this.items.slice(start, end);
+            this.updateShowItems();
+            // const start = (this.page.current - 1) * this.page.size;
+            // const end = start + this.page.size;
+            // this.showItems = this.items.slice(start, end);
         },
         startPolling(taskId) {
             this.pollingController = createPollingController();
-            fetchStatus(taskId, this.handleTaskResult, 1000, this.pollingController);
+            fetchStatus(taskId, this.handleTaskResult, this.handleTaskComplete, 1000, this.pollingController);
         },
         stopPolling() {
             if (this.pollingController) {
@@ -121,7 +185,6 @@ export default {
         handleTaskResult(data) {
             console.log('Task result:', data);
             this.loading = false;
-            this.headerLoading = false;
 
             if (data.result) {
                 try {
@@ -134,7 +197,7 @@ export default {
                         if (data.hasTag && nbt) {
                             nbt.parse(nbt.base64ToUint8Array(data.tag), (e, unzipNbt) => {
                                 if (e) {
-                                    console.log(e)
+                                    console.error(e)
                                 } else {
                                     data.tag = JSON.stringify(unzipNbt)
                                 }
@@ -162,12 +225,19 @@ export default {
                 this.$message.warning(`返回数据为空!`);
             }
         },
+        handleTaskComplete() {
+            this.headerLoading = false;
+        },
         getItems() {
             this.headerLoading = true;
-            addTask("getAllItems")
-            this.startPolling("getAllItems");
+            addTask("getAllItems", null, () => {
+                this.startPolling("getAllItems")
+            })
         },
         copyToClipboard(text) {
+            if (typeof text === 'object') {
+                text = JSON.stringify(text);
+            }
             navigator.clipboard.writeText(text).then(() => {
                 this.$message({
                     message: '复制成功!',
@@ -181,8 +251,61 @@ export default {
                 console.error('复制失败:', err);
             });
         },
-        craftItem(name, damage) {
-            console.log("craft", name, damage)
+        openCraftDialog(title, name, damage) {
+            this.craft.name = name;
+            this.craft.damage = damage;
+            this.craft.amount = 1;
+            this.craftDialogTitle = "下单-" + title;
+            this.showCraftDialog = true;
+        },
+        craftItem() {
+            let name = this.craft.name;
+            let damage = this.craft.damage;
+            let amount = this.craft.amount;
+            let cpuName = this.craft.selectCpu;
+            this.craft.btnLoading = true;
+            console.log("craft：", name, damage, amount, cpuName)
+            createCraftTask(name, damage, amount, cpuName, (data) => {
+                this.craft.btnLoading = false;
+                this.showCraftDialog = false;
+            });
+        },
+        updateShowItems() {
+            let filteredItems = this.items;
+            if (this.showCraft === "可下单") {
+                filteredItems = filteredItems.filter(item => item.isCraftable);
+            }
+
+            if (this.searchText) {
+                filteredItems = filteredItems.filter(item => {
+                    if (this.searchType === "label") {
+                        return item.label && item.label.toLowerCase().includes(this.searchText.toLowerCase());
+                    } else if (this.searchType === "name") {
+                        return item.data.name && item.data.name.toLowerCase().includes(this.searchText.toLowerCase());
+                    } else {
+                        return item.title && item.title.toLowerCase().includes(this.searchText.toLowerCase());
+                    }
+                });
+            }
+            this.page.total = filteredItems.length;
+
+            const start = (this.page.current - 1) * this.page.size;
+            const end = start + this.page.size;
+            this.showItems = filteredItems.slice(start, end);
+        }
+    },
+    watch: {
+        items() {
+            this.updateShowItems();
+        },
+        showCraft() {
+            this.updateShowItems();
+        },
+        searchType() {
+            this.updateShowItems();
+        },
+        searchText() {
+            this.updateShowItems();
         }
     }
 };
@@ -195,7 +318,7 @@ export default {
 
 .item-card {
     flex: 0 0 300px;
-    height: 100px;
+
 }
 
 .item-card .el-card__body {
@@ -231,7 +354,6 @@ export default {
 }
 
 .el-pagination {
-    margin-top: 6px;
     justify-content: flex-end;
 }
 </style>
@@ -251,12 +373,13 @@ export default {
 }
 
 .pagination-container {
-    /* width: 100%; */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin: auto 0;
     height: 36px;
     padding-right: 10px;
 }
-
 
 .control-card {
     padding: 10px;
@@ -287,7 +410,7 @@ export default {
 
 .image-wrapper {
     display: flex;
-    height: calc(100% - 16px);
+    height: calc(100% - 32px);
 }
 
 .item-card {

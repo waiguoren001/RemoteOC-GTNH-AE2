@@ -155,7 +155,7 @@ function ae.requestItem(name, damage, amount, cpuName)
                 result = craftable.request(amount, nil, cpuName)
             end
         else
-            return { message = "success", data = cpuInfo }
+            return { message = "CPU不存在", data = cpuInfo }
         end
     end
 
