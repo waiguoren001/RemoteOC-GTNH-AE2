@@ -10,7 +10,7 @@
                 <el-input v-model="backendUrl" placeholder="Backend URL"></el-input>
             </el-form-item>
             <el-form-item label="服务端令牌">
-                <el-input v-model="token" placeholder="Token"></el-input>
+                <el-input v-model="token" placeholder="Token" type="password" show-password></el-input>
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" @click="saveSettings">保存</el-button>

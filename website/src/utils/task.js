@@ -5,6 +5,10 @@ import { ElMessage, ElNotification } from 'element-plus';
 // 轮询获取任务状态
 const fetchStatus = async (task_id, handleResult, handleComplete, interval = 1000, pollingController = createPollingController()) => {
     try {
+        if (!localStorage.getItem('backendUrl')) {
+            ElMessage.error(`请先设置后端地址！`)
+            return
+        }
         const response = await Requests.get('/api/cmd/status', { task_id, remove: false });
         const data = response.data;
         if (data.code === 200) {

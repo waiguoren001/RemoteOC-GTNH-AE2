@@ -15,8 +15,8 @@
             <el-card class="box-card">
                 <el-auto-resizer>
                     <template #default="{ height, width }">
-                        <el-table-v2 :columns="columns" :data="tasks" :width="width" :height="height" row-key="taskId"
-                            :header-height="50" :row-height="50" />
+                        <el-table-v2 :columns="columns" :data="tasks" :width="width" :height="height"
+                            :header-height="50" :row-height="75" />
                     </template>
                 </el-auto-resizer>
             </el-card>
@@ -24,7 +24,9 @@
         <el-dialog v-model="showInfoDialog" title="任务详情" width="800" align-center>
             <el-text>任务ID: <span>{{ info.id }}</span></el-text>
             <div class="info-container">
-                <code><pre>{{ info.data }}</pre></code>
+                <code>
+            <pre>{{ info.data }}</pre>
+        </code>
             </div>
         </el-dialog>
     </el-container>
@@ -55,6 +57,7 @@ export default {
                     title: '操作',
                     width: 250,
                     align: 'center',
+                    fixed: 'right',
                     cellRenderer: (data) => (
                         h("div", {}, [
                             h(
@@ -89,13 +92,12 @@ export default {
                 this.tasks = storedTasks.map(task => ({
                     taskId: task.id,
                     type: task.type,
-                    data: task.data || {status: 'loading'},
+                    data: task.data || { status: 'loading' },
                 }));
                 if (fetchData) {
                     this.tasks.forEach(task => this.fetchTaskStatus(task.taskId, task.data.status));
                     this.lastUpdate = new Date().toLocaleString();
                 }
-    
             } catch (error) {
                 console.error(error);
                 this.$message.error('加载任务失败');
@@ -127,6 +129,13 @@ export default {
                 inputErrorMessage: '错误的任务ID',
             })
                 .then(({ value }) => {
+                    if (!value) {
+                        ElMessage({
+                            type: 'warning',
+                            message: `任务ID为空`,
+                        })
+                        return
+                    }
                     localTask.saveTaskId(value, '自定义', null)
                     ElMessage({
                         type: 'success',
@@ -151,6 +160,9 @@ export default {
     },
     created() {
         this.loadTasks();
+    },
+    activated() {
+        this.loadTasks(false);
     },
 };
 </script>

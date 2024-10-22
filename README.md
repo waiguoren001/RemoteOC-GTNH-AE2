@@ -8,3 +8,19 @@
 
 
 > 当前项目正在开发中。
+
+
+
+
+
+## 其他
+
+### nbt标签解析
+
+[https://github.com/sjmulder/nbt-js](https://github.com/sjmulder/nbt-js)
+
+### 物品和流体图标、数据来源
+
+[https://github.com/RealSilverMoon/nesql-exporter/](https://github.com/RealSilverMoon/nesql-exporter/)
+
+

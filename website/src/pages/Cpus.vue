@@ -130,7 +130,7 @@ export default {
                 const key = `${item.name}:${item.damage}`;
                 let item_ = itemUtil.getItem(item)
                 itemMap.set(key, {
-                    label: itemUtil.getName(item_),
+                    label: itemUtil.getName(item_, item),
                     active: item.size,
                     pending: 0,
                     stored: 0,
@@ -146,7 +146,7 @@ export default {
                 } else {
                     let item_ = itemUtil.getItem(item)
                     itemMap.set(key, {
-                        label: itemUtil.getName(item_),
+                        label: itemUtil.getName(item_, item),
                         active: 0,
                         pending: item.size,
                         stored: 0,
@@ -163,7 +163,7 @@ export default {
                 } else {
                     let item_ = itemUtil.getItem(item)
                     itemMap.set(key, {
-                        label: itemUtil.getName(item_),
+                        label: itemUtil.getName(item_, item),
                         active: 0,
                         pending: 0,
                         stored: item.size,

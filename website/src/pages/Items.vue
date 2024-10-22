@@ -53,13 +53,16 @@
                                 <div v-if="item.isCraftable"><el-tag size="small" type="success">可合成</el-tag></div>
                                 <el-tooltip placement="top">
                                     <template #content>
+                                        <div style="font-size: 12px; color: #aaa;">Tooltip</div>
+                                        <div>{{ item.title }}</div>
+                                        <div v-for="(info, index) in item.tooltip" :key="index">
+                                            {{ info }}
+                                        </div>
+                                        <div>{{ item.data.name }}:{{ item.data.damage }}</div>
                                         <div style="font-size: 12px; color: #aaa;">其他属性</div>
                                         <div v-for="(value, key, index) in item.data" :key="index" :title="value"
                                             @click="copyToClipboard(value)" class="words">
                                             {{ key }}: {{ value }}
-                                        </div>
-                                        <div v-for="(info, index) in item.tooltip" :key="index">
-                                            {{ info }}
                                         </div>
                                         <div style="font-size: 10px; color: #aaa;">点击复制属性值</div>
                                     </template>
@@ -92,21 +95,24 @@
         <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" width="500" align-center>
             <el-form :model="craft">
                 <el-form-item label="下单数量">
-                    <el-input v-model="craft.amount" type="number" placeholder="请输入下单数量"/>
+                    <el-input v-model="craft.amount" type="number" placeholder="请输入下单数量" />
                 </el-form-item>
                 <el-form-item label="选择CPU">
-                    <el-tooltip>
-                        <template #content>
-                            暂不支持
-                        </template>
-                        <el-select-v2 ref="select" :disabled="craft.cpuOptions.length === 0" v-model="craft.selectCpu"
-                            :options="craft.cpuOptions" placeholder="自动分配" style="width: 280px">
-                            <template #footer>
-                                <span>仅能选择已命名且空闲的CPU</span>
+                    <div style="width: 100%; display: flex; justify-content: space-between;">
+                        <el-tooltip>
+                            <template #content>
+                                {{ craft.cpuOptions.length === 0 ? '请先获取CPU列表':'请选择CPU' }}
                             </template>
-                        </el-select-v2>
-                    </el-tooltip>
-
+                            <el-select-v2 ref="select" :disabled="craft.cpuOptions.length === 0"
+                                v-model="craft.selectCpu" :options="craft.cpuOptions" placeholder="自动分配"
+                                style="width: 280px">
+                                <template #footer>
+                                    <span>仅能选择已命名且空闲的CPU</span>
+                                </template>
+                            </el-select-v2>
+                        </el-tooltip>
+                        <el-button type="primary" @click="getCpuList" :loading="craft.cpuBthLoading">获取CPU</el-button>
+                    </div>
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -154,6 +160,7 @@ export default {
                 damage: null,
                 amount: 1,
                 btnLoading: false,
+                cpuBthLoading: false,
                 selectCpu: null,
                 cpuOptions: [],
             }
@@ -206,7 +213,7 @@ export default {
                         let item_ = itemUtil.getItem(item)
                         let new_item = {
                             image: itemUtil.getItemIcon(item_),
-                            title: itemUtil.getName(item_) || item.label,
+                            title: itemUtil.getName(item_, item, data) || item.label,
                             label: item.label,
                             size: item.size,
                             tooltip: item_ && item_.tooltip || [],
@@ -292,6 +299,35 @@ export default {
             const start = (this.page.current - 1) * this.page.size;
             const end = start + this.page.size;
             this.showItems = filteredItems.slice(start, end);
+        },
+        getCpuList() {
+            this.craft.cpuBthLoading = true;
+            addTask("getCpuList", null, () => {
+                fetchStatus("getCpuList", null, (data) => {
+                    this.craft.cpuBthLoading = false;
+                    if (data && data.result && data.result[0]) {
+                        let cpuInfo = JSON.parse(data.result[0]);
+                        if (cpuInfo.message && cpuInfo.message === "success") {
+                            let cpuList = cpuInfo.data;
+                            console.log(cpuList)
+                            cpuList = cpuList.filter(cpu => !cpu.busy && cpu.name !== "");
+                            this.craft.cpuOptions = cpuList.map(item => ({
+                                value: item.name,
+                                label: item.name,
+                            }))
+                            this.craft.cpuOptions.push({
+                                label: "自动分配",
+                                value: null,
+                            })
+                            this.$message.success(`获取CPU列表成功`)
+                        } else {
+                            this.$message.error(`获取CPU列表失败: ${cpuInfo.message}`)
+                        }
+                    } else {
+                        this.$message.error("获取CPU列表失败")
+                    }
+                });
+            })
         }
     },
     watch: {
@@ -443,7 +479,7 @@ export default {
 }
 
 .craft-icon {
-    position: absolute;
+    position:absolute;
     top: 28px;
     right: 8px;
     font-size: 20px;
