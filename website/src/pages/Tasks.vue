@@ -107,7 +107,7 @@ export default {
         },
         async fetchTaskStatus(taskId, status) {
             try {
-                if (status !== "completed") await fetchStatus(taskId, this.handleTaskResult, null, 1000, null);
+                if (status !== "completed") await fetchStatus(taskId, this.handleTaskResult, null, null, 1000, null);
             } catch (error) {
                 console.error(error);
                 this.$message.error(`任务 ${taskId} 获取状态失败`);

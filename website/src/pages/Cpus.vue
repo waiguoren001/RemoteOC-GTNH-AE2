@@ -38,7 +38,7 @@
 
                 <el-col :span="18" style="height: 100%;">
                     <el-card class="box-card">
-                        <el-row :gutter="20">
+                        <el-row v-if="currentCpu.items.length" :gutter="20">
                             <el-col v-for="(item, index) in currentCpu.items" :key="index" :span="8">
                                 <el-card :class="'item-card ' + getItemCardClass(item)" shadow="hover">
                                     <div class="image-wrapper">
@@ -66,6 +66,7 @@
                                 </el-card>
                             </el-col>
                         </el-row>
+                        <el-empty v-else description="没有物品" />
                     </el-card>
                 </el-col>
             </el-row>
@@ -114,7 +115,7 @@ export default {
         },
         startPolling(taskId) {
             this.pollingController = createPollingController();
-            fetchStatus(taskId, this.handleTaskResult, this.handleTaskComplete, 1000, this.pollingController);
+            fetchStatus(taskId, this.handleTaskResult, null, this.handleTaskComplete, 1000, this.pollingController);
         },
         stopPolling() {
             if (this.pollingController) {
@@ -123,14 +124,30 @@ export default {
             }
         },
         parseItemStack(data) {
-            const itemMap = new Map();
+            const itemArray = [];
+
+            // 合并相同物品
+            const mergeItems = (array, newItem) => {
+                const existingItem = array.find(item =>
+                    item.label === newItem.label &&
+                    item.damage === newItem.damage &&
+                    item.name === newItem.name);
+                if (existingItem) {
+                    existingItem.active += newItem.active;
+                    existingItem.pending += newItem.pending;
+                    existingItem.stored += newItem.stored;
+                } else {
+                    array.push(newItem);
+                }
+            };
 
             // 处理 activeItems
             data.activeItems.forEach(item => {
-                const key = `${item.name}:${item.damage}`;
-                let item_ = itemUtil.getItem(item)
-                itemMap.set(key, {
+                let item_ = itemUtil.getItem(item);
+                mergeItems(itemArray, {
                     label: itemUtil.getName(item_, item),
+                    name: item.name,
+                    damage: item.damage,
                     active: item.size,
                     pending: 0,
                     stored: 0,
@@ -140,43 +157,43 @@ export default {
 
             // 处理 pendingItems
             data.pendingItems.forEach(item => {
-                const key = `${item.name}:${item.damage}`;
-                if (itemMap.has(key)) {
-                    itemMap.get(key).pending = item.size;
-                } else {
-                    let item_ = itemUtil.getItem(item)
-                    itemMap.set(key, {
-                        label: itemUtil.getName(item_, item),
-                        active: 0,
-                        pending: item.size,
-                        stored: 0,
-                        image: itemUtil.getItemIcon(item_)
-                    });
-                }
+                let item_ = itemUtil.getItem(item);
+                mergeItems(itemArray, {
+                    label: itemUtil.getName(item_, item),
+                    name: item.name,
+                    damage: item.damage,
+                    active: 0,
+                    pending: item.size,
+                    stored: 0,
+                    image: itemUtil.getItemIcon(item_)
+                });
             });
 
             // 处理 storedItems
             data.storedItems.forEach(item => {
-                const key = `${item.name}:${item.damage}`;
-                if (itemMap.has(key)) {
-                    itemMap.get(key).stored = item.size;
-                } else {
-                    let item_ = itemUtil.getItem(item)
-                    itemMap.set(key, {
-                        label: itemUtil.getName(item_, item),
-                        active: 0,
-                        pending: 0,
-                        stored: item.size,
-                        image: itemUtil.getItemIcon(item_)
-                    });
-                }
+                let item_ = itemUtil.getItem(item);
+                mergeItems(itemArray, {
+                    label: itemUtil.getName(item_, item),
+                    name: item.name,
+                    damage: item.damage,
+                    active: 0,
+                    pending: 0,
+                    stored: item.size,
+                    image: itemUtil.getItemIcon(item_)
+                });
             });
 
-            return Array.from(itemMap.values());
+            return itemArray;
+        },
+
+        parseOutputItem(item) {
+            let item_ = itemUtil.getItem(item);
+            item['image'] = itemUtil.getItemIcon(item_);
+            return item;
         },
 
         handleTaskResult(data) {
-            console.log('Task result:', data);
+            // console.log('Task result:', data);
             this.loading = false;
 
             if (data.result) {
@@ -202,10 +219,9 @@ export default {
                             busy: cpu.busy,
                             coprocessors: cpu.coprocessors,
                             storage: cpu.storage,
-                            output: {},
+                            output: cpu.cpu && cpu.cpu.finalOutput ? this.parseOutputItem(cpu.cpu.finalOutput) : {},
                             items: this.parseItemStack(cpu.cpu),
                         });
-
                         if (previousCpuName && previousCpuName === name) {
                             this.currentCpu = cpuList[cpuList.length - 1];
                             this.cpuSelected = cpuList.length - 1;
@@ -217,7 +233,6 @@ export default {
                         this.currentCpu = cpuList[0];
                         this.cpuSelected = 0;
                     }
-
                     this.cpuList = cpuList;
                 } catch (e) {
                     console.error(e, data);
@@ -265,7 +280,7 @@ export default {
 }
 
 .item-card {
-    height: 100px;
+    height: 116px;
 }
 
 .item-card .el-card__body {
@@ -360,7 +375,7 @@ export default {
 .image-wrapper {
     display: flex;
     /* align-items: center; */
-    height: calc(100% - 16px);
+    height: calc(100% - 32px);
 }
 
 .item-card {

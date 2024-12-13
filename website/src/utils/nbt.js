@@ -26,7 +26,6 @@ if (typeof Uint8Array === 'undefined') {
 var nbt = {};
 // var zlib = require('zlib');
 import zlib from "pako"
-console.log(zlib)
 
 /**
  * A mapping from type names to NBT type numbers.

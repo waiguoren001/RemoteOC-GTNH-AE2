@@ -55,13 +55,16 @@
                                     <template #content>
                                         <div style="font-size: 12px; color: #aaa;">Tooltip</div>
                                         <div>{{ item.title }}</div>
-                                        <div v-for="(info, index) in item.tooltip" :key="index">
+                                        <div class="words copy-container" v-for="(info, index) in item.tooltip"
+                                            :key="index" @click="copyToClipboard(info)">
                                             {{ info }}
                                         </div>
-                                        <div>{{ item.data.name }}:{{ item.data.damage }}</div>
+                                        <div class="words copy-container"
+                                            @click="copyToClipboard(`${item.data.name}:${item.data.damage}`)">{{
+                                            item.data.name }}:{{ item.data.damage }}</div>
                                         <div style="font-size: 12px; color: #aaa;">其他属性</div>
                                         <div v-for="(value, key, index) in item.data" :key="index" :title="value"
-                                            @click="copyToClipboard(value)" class="words">
+                                            @click="copyToClipboard(value)" class="words copy-container">
                                             {{ key }}: {{ value }}
                                         </div>
                                         <div style="font-size: 10px; color: #aaa;">点击复制属性值</div>
@@ -101,7 +104,7 @@
                     <div style="width: 100%; display: flex; justify-content: space-between;">
                         <el-tooltip>
                             <template #content>
-                                {{ craft.cpuOptions.length === 0 ? '请先获取CPU列表':'请选择CPU' }}
+                                {{ craft.cpuOptions.length === 0 ? '请先获取CPU列表' : '请选择CPU' }}
                             </template>
                             <el-select-v2 ref="select" :disabled="craft.cpuOptions.length === 0"
                                 v-model="craft.selectCpu" :options="craft.cpuOptions" placeholder="自动分配"
@@ -140,7 +143,7 @@ export default {
         return {
             loading: true,
             headerLoading: false,
-            headerLoadingText: "请求已发送，等待客户端响应... Task id: getAllItems",
+            headerLoadingText: "",
             lastUpdate: "",
             showCraft: "全部",
             searchType: "title",
@@ -181,7 +184,7 @@ export default {
         },
         startPolling(taskId) {
             this.pollingController = createPollingController();
-            fetchStatus(taskId, this.handleTaskResult, this.handleTaskComplete, 1000, this.pollingController);
+            fetchStatus(taskId, this.handleTaskResult, this.handleTaskUploading, this.handleTaskComplete, 1000, this.pollingController);
         },
         stopPolling() {
             if (this.pollingController) {
@@ -232,11 +235,22 @@ export default {
                 this.$message.warning(`返回数据为空!`);
             }
         },
+        handleTaskUploading(data) {
+            if (this.headerLoadingText === "客户端正在上传数据，请稍后... Task id: getAllItems") {
+                return
+            }
+            this.headerLoading = false;
+            this.$nextTick(() => {
+                this.headerLoadingText = "客户端正在上传数据，请稍后... Task id: getAllItems";
+                this.headerLoading = true;
+            });
+        },
         handleTaskComplete() {
             this.headerLoading = false;
         },
         getItems() {
             this.headerLoading = true;
+            this.headerLoadingText = "请求已发送，等待客户端响应... Task id: getAllItems";
             addTask("getAllItems", null, () => {
                 this.startPolling("getAllItems")
             })
@@ -245,18 +259,32 @@ export default {
             if (typeof text === 'object') {
                 text = JSON.stringify(text);
             }
-            navigator.clipboard.writeText(text).then(() => {
-                this.$message({
-                    message: '复制成功!',
-                    type: 'success'
-                });
-            }).catch(err => {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed'; // 避免滚动页面
+                textarea.style.opacity = '0'; // 隐藏
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                if (success) {
+                    this.$message({
+                        message: '复制成功!',
+                        type: 'success'
+                    });
+                } else {
+                    throw new Error('execCommand复制失败');
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
                 this.$message({
                     message: '复制失败',
                     type: 'error'
                 });
-                console.error('复制失败:', err);
-            });
+            }
         },
         openCraftDialog(title, name, damage) {
             this.craft.name = name;
@@ -303,7 +331,7 @@ export default {
         getCpuList() {
             this.craft.cpuBthLoading = true;
             addTask("getCpuList", null, () => {
-                fetchStatus("getCpuList", null, (data) => {
+                fetchStatus("getCpuList", null, null, (data) => {
                     this.craft.cpuBthLoading = false;
                     if (data && data.result && data.result[0]) {
                         let cpuInfo = JSON.parse(data.result[0]);
@@ -444,6 +472,10 @@ export default {
     width: 100%;
 }
 
+.copy-container {
+    cursor: pointer;
+}
+
 .image-wrapper {
     display: flex;
     height: calc(100% - 32px);
@@ -479,7 +511,7 @@ export default {
 }
 
 .craft-icon {
-    position:absolute;
+    position: absolute;
     top: 28px;
     right: 8px;
     font-size: 20px;

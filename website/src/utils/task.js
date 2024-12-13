@@ -3,7 +3,7 @@ import { ElMessage, ElNotification } from 'element-plus';
 
 
 // 轮询获取任务状态
-const fetchStatus = async (task_id, handleResult, handleComplete, interval = 1000, pollingController = createPollingController()) => {
+const fetchStatus = async (task_id, handleResult, handleUploading, handleComplete, interval = 1000, pollingController = createPollingController()) => {
     try {
         if (!localStorage.getItem('backendUrl')) {
             ElMessage.error(`请先设置后端地址！`)
@@ -12,8 +12,11 @@ const fetchStatus = async (task_id, handleResult, handleComplete, interval = 100
         const response = await Requests.get('/api/cmd/status', { task_id, remove: false });
         const data = response.data;
         if (data.code === 200) {
-            if (data.data.result && data.data.result != []) {
+            if (data.data.result && data.data.result != [] && data.data.status !== 'uploading') {
                 if (handleResult) handleResult(data.data);
+            }
+            if (data.data.status === 'uploading') {
+                if (handleUploading) handleUploading(data.data);
             }
             if (data.data.status === 'completed') {
                 if (handleComplete) handleComplete(data.data);
@@ -23,7 +26,7 @@ const fetchStatus = async (task_id, handleResult, handleComplete, interval = 100
             } else {
                 if (pollingController && pollingController.running) {
                     pollingController.timeoutId = setTimeout(() => {
-                        fetchStatus(task_id, handleResult, handleComplete, interval, pollingController);
+                        fetchStatus(task_id, handleResult, handleUploading, handleComplete, interval, pollingController);
                     }, interval);
                 }
             }
@@ -166,8 +169,8 @@ const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, callback) =>
                 duration: 6000,
             });
         }
-        fetchStatus(task_id, null, (taskData) => {
-            console.log(taskData)
+        fetchStatus(task_id, null, null, (taskData) => {
+            // console.log(taskData)
             try {
                 if (taskData && taskData.result && taskData.result[0]) {
                     let result = JSON.parse(taskData.result[0])

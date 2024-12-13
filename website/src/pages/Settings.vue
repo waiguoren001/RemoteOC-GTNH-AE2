@@ -6,6 +6,9 @@
                     <p>该页面内容请勿泄露给他人</p>
                 </el-alert>
             </el-space>
+            <el-form-item label="页面标题">
+                <el-input v-model="title" placeholder="Title"></el-input>
+            </el-form-item>
             <el-form-item label="服务端地址">
                 <el-input v-model="backendUrl" placeholder="Backend URL"></el-input>
             </el-form-item>
@@ -24,15 +27,17 @@ export default {
     name: 'Settings',
     data() {
         return {
+            title: localStorage.getItem("pageTitle") || "GTNH赛博监工",
             backendUrl: localStorage.getItem('backendUrl') || '',
             token: localStorage.getItem('token') || '',
         };
     },
     methods: {
         saveSettings() {
+            localStorage.setItem('pageTitle', this.title);
             localStorage.setItem('backendUrl', this.backendUrl);
             localStorage.setItem('token', this.token);
-            this.$message.success('设置已保存');
+            this.$message.success('设置已保存，刷新网页生效');
         },
     },
 };
