@@ -42,23 +42,77 @@
             </el-main>
         </el-container>
     </el-container>
+    <el-progress v-if="itemProgress + fluidsProgress < 100" :percentage="itemProgress + fluidsProgress" :status="progressStatus" striped striped-flow :stroke-width="15" :text-inside="true"
+        style="position: fixed; top: calc(50% + 100px); left: 50%; transform: translateX(-50%); width: 20%; z-index: 9999;" />
 </template>
 
 <script>
+import itemUtil from "@/utils/items";
+import { ElLoading, ElMessage, ElProgress } from "element-plus";
+
 export default {
+    component: {
+        ElProgress
+    },
     data() {
         return {
             pageTitle: "",
+            loadingInstance: null,
+            itemProgress: 0,
+            fluidsProgress: 0,
+            progressStatus: "",
         };
     },
     created() {
         this.pageTitle = localStorage.getItem("pageTitle") || "GTNH赛博监工";
         document.title = this.pageTitle;
+        this.loadItemData()
     },
+
     methods: {
         handleSelect(key, keyPath) {
             this.$router.push({ name: key });
         },
+        loadItemData() {
+            this.loadingInstance = ElLoading.service({
+                fullscreen: true,
+                customClass: 'loading-container',  // 添加自定义样式类
+                text: '加载中...',  // 设置加载文案
+            });
+
+            let itemsLoaded = false;
+            let fluidsLoaded = false;
+
+            // 加载 items 数据
+            itemUtil.loadItems((percent) => {
+                console.log(`Items JSON loading: ${percent}%`);
+                this.itemProgress = percent / 2;
+                if (percent === 100) {
+                    itemsLoaded = true;
+                    if (itemsLoaded && fluidsLoaded) {
+                        this.loadingInstance.close();
+                    }
+                } else if (percent === -1) {
+                    ElMessage.error("加载 items 数据失败！");
+                    this.loadingInstance.close();
+                }
+            });
+
+            // 加载 fluids 数据
+            itemUtil.loadFluids((percent) => {
+                console.log(`Fluids JSON loading: ${percent}%`);
+                this.fluidsProgress = percent / 2;
+                if (percent === 100) {
+                    fluidsLoaded = true;
+                    if (itemsLoaded && fluidsLoaded) {
+                        this.loadingInstance.close();
+                    }
+                } else if (percent === -1) {
+                    ElMessage.error("加载 fluids 数据失败！");
+                    this.loadingInstance.close();
+                }
+            });
+        }
     },
 };
 </script>
