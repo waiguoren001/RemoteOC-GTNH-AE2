@@ -2,10 +2,10 @@
     <div>
         <el-row :gutter="20" justify="center" align="middle" style="margin: 0; margin-top: 5%;">
             <el-col :span="8" style="text-align: center;">
-                <el-image src="./img/gtnh.png" alt="GTNH" style="width: 40%; height: auto;" />
+                <el-image src="/img/gtnh.png" alt="GTNH" style="width: 40%; height: auto;" />
             </el-col>
             <el-col :span="8" style="text-align: center;">
-                <el-image src="./img/oc.png" alt="OpenComputers" style="width: 40%; height: auto;" />
+                <el-image src="/img/oc.png" alt="OpenComputers" style="width: 40%; height: auto;" />
             </el-col>
         </el-row>
 

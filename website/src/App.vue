@@ -24,8 +24,7 @@
         </el-header>
         <el-container style="height: 100%;">
             <el-aside width="200px" style="height: calc(100vh - 60px);">
-                <el-menu default-active="index" class="el-menu-vertical-demo" @select="handleSelect"
-                    style="height: 100%;">
+                <el-menu default-active="index" class="el-menu-vertical-demo" @select="handleSelect" style="height: 100%;">
                     <el-menu-item index="Index">主页</el-menu-item>
                     <el-menu-item index="Items">物品</el-menu-item>
                     <el-menu-item index="Cpus">CPUs</el-menu-item>
@@ -33,8 +32,9 @@
                     <el-menu-item index="Settings">设置</el-menu-item>
                 </el-menu>
             </el-aside>
+            <!-- 使用 v-if 控制子组件渲染 -->
             <el-main style="height: calc(100vh - 60px); padding: 0;">
-                <router-view v-slot="{ Component }">
+                <router-view v-if="isDataLoaded" v-slot="{ Component }">
                     <keep-alive>
                         <component :is="Component" />
                     </keep-alive>
@@ -61,12 +61,13 @@ export default {
             itemProgress: 0,
             fluidsProgress: 0,
             progressStatus: "",
+            isDataLoaded: false,
         };
     },
     created() {
         this.pageTitle = localStorage.getItem("pageTitle") || "GTNH赛博监工";
         document.title = this.pageTitle;
-        this.loadItemData()
+        this.loadItemData();
     },
 
     methods: {
@@ -76,8 +77,8 @@ export default {
         loadItemData() {
             this.loadingInstance = ElLoading.service({
                 fullscreen: true,
-                customClass: 'loading-container',  // 添加自定义样式类
-                text: '加载中...',  // 设置加载文案
+                customClass: 'custom-loading',
+                text: '加载中...',
             });
 
             let itemsLoaded = false;
@@ -91,6 +92,7 @@ export default {
                     itemsLoaded = true;
                     if (itemsLoaded && fluidsLoaded) {
                         this.loadingInstance.close();
+                        this.isDataLoaded = true;
                     }
                 } else if (percent === -1) {
                     ElMessage.error("加载 items 数据失败！");
@@ -106,6 +108,7 @@ export default {
                     fluidsLoaded = true;
                     if (itemsLoaded && fluidsLoaded) {
                         this.loadingInstance.close();
+                        this.isDataLoaded = true;
                     }
                 } else if (percent === -1) {
                     ElMessage.error("加载 fluids 数据失败！");
@@ -153,5 +156,20 @@ export default {
 
 .title {
     font-size: 18px;
+}
+</style>
+
+<style>
+/* 隐藏默认的加载图标 */
+.custom-loading .el-loading-spinner .circular > circle {
+    display: none;
+}
+
+.custom-loading .el-loading-spinner .circular {
+    width: 80px !important;
+    height: 80px !important;
+    background: url('./assets/loading.gif') no-repeat center center;
+    background-size: contain;
+    animation: none;
 }
 </style>

@@ -354,6 +354,12 @@ export default {
     height: 64px;
 }
 
+@media (max-width: 1300px) {
+    .cpu-output .output-image {
+        display: none; /* 隐藏 cpu-output */
+    }
+}
+
 .output-image {
     width: 64px;
     height: 64px;
