@@ -24,8 +24,9 @@
         </el-header>
         <el-container style="height: 100%;">
             <el-aside width="200px" style="height: calc(100vh - 60px);">
-                <el-menu default-active="index" class="el-menu-vertical-demo" @select="handleSelect" style="height: 100%;">
+                <el-menu default-active="Index" class="el-menu-vertical-demo" @select="handleSelect" style="height: 100%;">
                     <el-menu-item index="Index">主页</el-menu-item>
+                    <el-menu-item v-if="showMoniter" index="Monitor">监控</el-menu-item>
                     <el-menu-item index="Items">物品</el-menu-item>
                     <el-menu-item index="Cpus">CPUs</el-menu-item>
                     <el-menu-item index="Tasks">任务</el-menu-item>
@@ -57,6 +58,7 @@ export default {
     data() {
         return {
             pageTitle: "",
+            showMoniter: false,
             loadingInstance: null,
             itemProgress: 0,
             fluidsProgress: 0,
@@ -66,6 +68,7 @@ export default {
     },
     created() {
         this.pageTitle = localStorage.getItem("pageTitle") || "GTNH赛博监工";
+        this.showMoniter = localStorage.getItem("showMoniter") === "true" || false;
         document.title = this.pageTitle;
         this.loadItemData();
     },

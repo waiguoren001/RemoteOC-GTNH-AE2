@@ -243,6 +243,7 @@ export default {
             }
         },
         handleTaskComplete() {
+            this.loading = false;
             this.headerLoading = false;
         },
         getCpuList() {

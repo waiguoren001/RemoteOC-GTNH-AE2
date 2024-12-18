@@ -246,6 +246,7 @@ export default {
             });
         },
         handleTaskComplete() {
+            this.loading = false;
             this.headerLoading = false;
         },
         getItems() {

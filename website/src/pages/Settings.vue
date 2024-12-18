@@ -9,6 +9,9 @@
             <el-form-item label="页面标题">
                 <el-input v-model="title" placeholder="Title"></el-input>
             </el-form-item>
+            <el-form-item label="启用监控页面">
+                <el-checkbox v-model="showMoniter" type="checkbox"></el-checkbox>
+            </el-form-item>
             <el-form-item label="服务端地址">
                 <el-input v-model="backendUrl" placeholder="Backend URL"></el-input>
             </el-form-item>
@@ -30,6 +33,7 @@ export default {
             title: localStorage.getItem("pageTitle") || "GTNH赛博监工",
             backendUrl: localStorage.getItem('backendUrl') || '',
             token: localStorage.getItem('token') || '',
+            showMoniter: localStorage.getItem('showMoniter') === "true" || false,
         };
     },
     methods: {
@@ -37,6 +41,7 @@ export default {
             localStorage.setItem('pageTitle', this.title);
             localStorage.setItem('backendUrl', this.backendUrl);
             localStorage.setItem('token', this.token);
+            localStorage.setItem('showMoniter', this.showMoniter);
             this.$message.success('设置已保存，刷新网页生效');
         },
     },

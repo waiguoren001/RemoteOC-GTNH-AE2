@@ -203,7 +203,7 @@ async def add_task_by_name(data: AddTaskByNameModel):
         return {"code": 404, "message": f"Task config not found for task name: {task_id}", "data": {"taskId": task_id}}
 
     commands = task_config_entry.get("commands", [])
-    if len(commands) != 1:
+    if len(commands) == 0:
         return {"code": 400, "message": f"Commands error for task name: {task_id}", "data": {"taskId": task_id}}
     is_chunked = task_config_entry.get("chunked", False)
 
