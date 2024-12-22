@@ -142,14 +142,31 @@ const localTask = {
     }
 }
 
-const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, callback) => {
+const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, label, callback, cpuCallback) => {
     let command = undefined;
+    // ae.requestItem(name, damage, amount, cpuName, label) lua
     if (cpuName) {
-        command = `return ae.requestItem('${itemName}', ${ItemDamage}, ${amount}, '${cpuName}')`
+        if (label) {
+            command = `return ae.requestItem('${itemName}', ${ItemDamage}, ${amount}, '${cpuName}', '${label}')`
+        } else {
+            command = `return ae.requestItem('${itemName}', ${ItemDamage}, ${amount}, '${cpuName}')`
+        }
     } else {
-        command = `return ae.requestItem('${itemName}', ${ItemDamage}, ${amount})`
+        if (label) {
+            command = `return ae.requestItem('${itemName}', ${ItemDamage}, ${amount}, nil, '${label}')`
+        } else {
+            command = `return ae.requestItem('${itemName}', ${ItemDamage}, ${amount})`
+        }
     }
-    addCommands(null, null, [command], (data) => {
+
+    let commands = [command];
+
+    let refreshCPU = localStorage.getItem('refreshCPU') === "true" || false;
+    if (refreshCPU) {
+        commands.push("return ae.getCpuList(true)");  // 刷新CPU
+    }
+
+    addCommands(null, null, commands, (data) => {
         if (callback) callback(data);
         let task_id = data.taskId;
         localTask.saveTaskId(task_id, '下单')
@@ -179,7 +196,7 @@ const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, callback) =>
                             if (result.data.done.why === "request failed (missing resources?)") {
                                 showErrorNotification("材料缺失或CPU不足，");
                             } else {
-                                showErrorNotification();
+                                showErrorNotification("未知错误，");
                             }
                         } else {
                             ElNotification({
@@ -191,17 +208,27 @@ const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, callback) =>
                             });
                         }
                     } else {
-                        showErrorNotification();
+                        showErrorNotification("未知错误，");
                     }
                 } else {
-                    showErrorNotification();
+                    showErrorNotification("未知错误，");
+                }
+                if (refreshCPU && taskData && taskData.result && taskData.result.length > 1 && taskData.result[1]) {
+                    try {
+                        if (cpuCallback) cpuCallback({
+                            // 传递taskData中除了result的其他数据
+                            ...taskData,
+                            result: [taskData.result[1]],
+                        })
+                    } catch (error) {
+                        console.error(error)
+                        ElMessage.error(`刷新CPU失败: ${error}`);
+                    }
                 }
             } catch (error) {
                 console.error(error)
-                showErrorNotification();
+                showErrorNotification("未知错误，");
             }
-
-
         }, 1000, createPollingController());
     });
 }

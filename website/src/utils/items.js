@@ -121,8 +121,20 @@ const itemUtil = {
         return "img/default.png";
     },
 
-    getFluidIcon: (obj) => {
-        // 根据需要实现
+    getFluidIcon: (data) => {
+        // name必为ae2fc:fluid_drop
+        if (data) {
+            if (data.tag) {
+                try {
+                    let tag = JSON.parse(data.tag);
+                    let fluidId = tag.value.Fluid.value;
+                    return "img/fluids/" + fluidId + ".png";
+                } catch (err) {
+                    return "img/default.png";
+                }
+            }
+        }
+        return "img/default.png";
     },
 };
 

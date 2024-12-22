@@ -78,6 +78,7 @@
 <script>
 import { fetchStatus, addTask, createPollingController } from '@/utils/task'
 import itemUtil from "@/utils/items";
+import bus from 'vue3-eventbus';
 
 export default {
     name: 'Cpus',
@@ -97,6 +98,10 @@ export default {
     },
     mounted() {
         this.startPolling("getCpuDetailList");
+        bus.on('refreshCpuList', this.handleTaskResult);
+    },
+    beforeUnmount() {
+        bus.off('refreshCpuList', this.handleTaskResult);
     },
     methods: {
         handleCpuSelect(index) {
@@ -185,13 +190,11 @@ export default {
 
             return itemArray;
         },
-
         parseOutputItem(item) {
             let item_ = itemUtil.getItem(item);
             item['image'] = itemUtil.getItemIcon(item_);
             return item;
         },
-
         handleTaskResult(data) {
             // console.log('Task result:', data);
             this.loading = false;
@@ -251,6 +254,9 @@ export default {
             addTask("getCpuDetailList", null, () => {
                 this.startPolling("getCpuDetailList")
             })
+        },
+        refreshCpuList() {
+            this.startPolling("getCpuDetailList");
         }
     }
 };

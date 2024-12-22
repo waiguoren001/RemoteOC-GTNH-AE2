@@ -120,21 +120,32 @@ function ae.getCpuDetail(cpuName)
     return { message = "no cpus" }
 end
 
-function ae.requestItem(name, damage, amount, cpuName)
+function ae.requestItem(name, damage, amount, cpuName, label)
     -- 请求合成指定的物品
     -- 参数:
     -- name (string): 要合成物品的名称
     -- damage (int): 物品的损坏值
     -- amount (int, 可选): 要合成的物品数量，默认值为1
     -- cpuName (string, 可选): 用于执行任务的CPU名称，若为空则系统自动选择
+    -- label (string, 可选): 物品的标签，用于区分不同的流体液滴
     if not name or not damage then
         return { message = "物品信息为空" }
     end
 
-    local craftable = me.getCraftables({
-        name = name,
-        damage = damage
-    })[1]
+    local craftable
+    if label then
+        craftable = me.getCraftables({
+            name = name,
+            damage = damage,
+            label = label
+        })[1]
+    else
+        craftable = me.getCraftables({
+            name = name,
+            damage = damage
+        })[1]
+    end
+
     if not craftable then
         return { message = "没有找到指定的物品" }
     end

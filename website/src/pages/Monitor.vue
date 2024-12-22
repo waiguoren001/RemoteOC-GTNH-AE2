@@ -239,25 +239,47 @@ export default {
         handleTaskResult(data) {
             if (data.result) {
                 try {
+                    // 将列表转换为对象的函数
+                    function parseDataToObject(dataArray) {
+                        const parsedObject = {};
+                        dataArray.forEach((item) => {
+                            const splitIndex = item.indexOf(':');
+                            if (splitIndex !== -1) {
+                                const key = item.slice(0, splitIndex).trim();
+                                const value = item.slice(splitIndex + 1).trim();
+                                parsedObject[key] = value;
+                            }
+                        });
+                        return parsedObject;
+                    }
+                    // 使用正则提取纯数字
+                    function extractNumber(str) {
+                        return parseInt(str.replace(/[^0-9]/g, ''));
+                    }
+
                     let { last, current } = data.result;
 
-                    // 提取 current 和 last 的数值
-                    const currentEUStored = parseInt(current[0][1].match(/\d{1,3}(?:,\d{3})*/)[0].replace(/,/g, ''));
-                    const currentTotalWirelessEU = parseInt(current[0][18].match(/\d{1,3}(?:,\d{3})*|\d+/)[0].replace(/,/g, ''));
+                    // 解析 current 和 last 数据为对象
+                    const currentObj = parseDataToObject(current[0]);
+                    const lastObj = last ? parseDataToObject(last[0]) : null;
+
+                    // 提取 current 数据
+                    const currentEUStored = extractNumber(currentObj["EU Stored (exact)"].replace(/,/g, ''));
+                    const currentTotalWirelessEU = extractNumber(currentObj["Total wireless EU (exact)"].replace(/,/g, ''));
                     const currentTotalItemUsage = current[2].total_usage;
 
                     // 计算 EUStored 的变化
-                    if (last && last[0] && last[0][1]) {
-                        const lastEUStored = parseInt(last[0][1].match(/\d{1,3}(?:,\d{3})*/)[0].replace(/,/g, ''));
+                    if (lastObj && lastObj["EU Stored (exact)"]) {
+                        const lastEUStored = extractNumber(lastObj["EU Stored (exact)"].replace(/,/g, ''));
                         this.statistic.EUStored.change = (currentEUStored - lastEUStored) / lastEUStored;
                     } else {
-                        this.statistic.EUStored.change = 0;  // 如果没有 last 数据，change 设为 0
+                        this.statistic.EUStored.change = 0; // 如果没有 last 数据，change 设为 0
                     }
                     this.EUStoredValue = currentEUStored;
 
                     // 计算 totalWirelessEU 的变化
-                    if (last && last[0] && last[0][18]) {
-                        const lastTotalWirelessEU = parseInt(last[0][18].match(/\d{1,3}(?:,\d{3})*|\d+/)[0].replace(/,/g, ''));
+                    if (lastObj && lastObj["Total wireless EU (exact)"]) {
+                        const lastTotalWirelessEU = extractNumber(lastObj["Total wireless EU (exact)"].replace(/,/g, ''));
                         this.statistic.totalWirelessEU.change = (currentTotalWirelessEU - lastTotalWirelessEU) / lastTotalWirelessEU;
                     } else {
                         this.statistic.totalWirelessEU.change = 0;
@@ -272,6 +294,7 @@ export default {
                         this.statistic.totalItemUsage.change = 0;
                     }
                     this.totalItemUsageValue = currentTotalItemUsage;
+
 
 
                     this.chartData = [

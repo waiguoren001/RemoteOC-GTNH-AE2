@@ -16,7 +16,8 @@
     "pako": "^2.1.0",
     "vue": "^3.2.25",
     "vue-echarts": "^7.0.3",
-    "vue-router": "4"
+    "vue-router": "4",
+    "vue3-eventbus": "^2.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",

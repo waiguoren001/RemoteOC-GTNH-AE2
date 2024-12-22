@@ -5,6 +5,7 @@
                 <div class="control-bar">
                     <div style="display: flex;">
                         <el-segmented v-model="showCraft" :options="['全部', '可下单']" size="default" />
+                        <el-segmented style="margin: 0 16px;" v-model="showLiquid" :options="['全部', '物品', '液体']" size="default" />
                         <el-input v-model="searchText" style="margin-left: 10px; width: 40vw; max-width: 400px;"
                             placeholder="请输入信息以查询">
                             <template #suffix>
@@ -32,7 +33,6 @@
                     <el-card v-for="(item, index) in showItems" :key="index" class="item-card" style="height: 116px;"
                         shadow="hover">
                         <div class="image-wrapper">
-                            <!-- <img :src="item.image || ''" class="component-image" /> -->
                             <el-image :src="item.image || ''" class="component-image" :alt="item.title" lazy>
                                 <template #placeholder>
                                     <el-skeleton :loading="true" animated class="component-image">
@@ -61,9 +61,10 @@
                                         </div>
                                         <div class="words copy-container"
                                             @click="copyToClipboard(`${item.data.name}:${item.data.damage}`)">{{
-                                            item.data.name }}:{{ item.data.damage }}</div>
+                                                item.data.name }}:{{ item.data.damage }}</div>
                                         <div style="font-size: 12px; color: #aaa;">其他属性</div>
-                                        <div v-for="(value, key, index) in item.data" :key="index" :title="value"
+                                        <div v-for="(value, key, index) in item.data" :key="index"
+                                            :title="typeof value === 'object' ? JSON.stringify(value) : value"
                                             @click="copyToClipboard(value)" class="words copy-container">
                                             {{ key }}: {{ value }}
                                         </div>
@@ -78,7 +79,7 @@
                                         下单制作
                                     </template>
                                     <el-icon size="large" class="craft-icon"
-                                        @click="openCraftDialog(item.title, item.data.name, item.data.damage)">
+                                        @click="openCraftDialog(item.title, item.data.name, item.data.damage, item.label)">
                                         <GoodsFilled />
                                     </el-icon>
                                 </el-tooltip>
@@ -135,6 +136,7 @@ import { fetchStatus, addTask, createCraftTask, createPollingController } from '
 import { Search } from '@element-plus/icons-vue'
 import itemUtil from "@/utils/items";
 import nbt from "@/utils/nbt"
+import bus from 'vue3-eventbus';
 
 export default {
     name: 'Items',
@@ -146,6 +148,7 @@ export default {
             headerLoadingText: "",
             lastUpdate: "",
             showCraft: "全部",
+            showLiquid: "全部",
             searchType: "title",
             searchText: "",
             items: [],
@@ -162,6 +165,7 @@ export default {
                 name: null,
                 damage: null,
                 amount: 1,
+                label: null,
                 btnLoading: false,
                 cpuBthLoading: false,
                 selectCpu: null,
@@ -193,13 +197,14 @@ export default {
             }
         },
         handleTaskResult(data) {
-            console.log('Task result:', data);
+            // console.log('Task result:', data);
             this.loading = false;
 
             if (data.result) {
                 try {
                     let result = data.result;
                     this.lastUpdate = data.completed_time ? data.completed_time.split(".")[0].replace("T", " ") : '未知';
+                    let isShowLiquidImage = localStorage.getItem('showFluid') === "true" || true;
                     let items = result;
                     let new_items = []
                     for (let item of items) {
@@ -214,8 +219,13 @@ export default {
                             })
                         }
                         let item_ = itemUtil.getItem(item)
+                        if (isShowLiquidImage && data.name === "ae2fc:fluid_drop") {
+                            image = itemUtil.getFluidIcon(data)
+                        } else {
+                            image = itemUtil.getItemIcon(item_)
+                        }
                         let new_item = {
-                            image: itemUtil.getItemIcon(item_),
+                            image: image,
                             title: itemUtil.getName(item_, item, data) || item.label,
                             label: item.label,
                             size: item.size,
@@ -277,6 +287,7 @@ export default {
                         type: 'success'
                     });
                 } else {
+                    console.error('execCommand复制失败');
                     throw new Error('execCommand复制失败');
                 }
             } catch (err) {
@@ -287,10 +298,11 @@ export default {
                 });
             }
         },
-        openCraftDialog(title, name, damage) {
+        openCraftDialog(title, name, damage, label) {
             this.craft.name = name;
             this.craft.damage = damage;
             this.craft.amount = 1;
+            this.craft.label = label;
             this.craftDialogTitle = "下单-" + title;
             this.showCraftDialog = true;
         },
@@ -299,17 +311,26 @@ export default {
             let damage = this.craft.damage;
             let amount = this.craft.amount;
             let cpuName = this.craft.selectCpu;
+            let label = name === "ae2fc:fluid_drop" ? this.craft.label : null;
             this.craft.btnLoading = true;
-            console.log("craft：", name, damage, amount, cpuName)
-            createCraftTask(name, damage, amount, cpuName, (data) => {
+            console.log("craft：", name, damage, amount, cpuName, label)
+            createCraftTask(name, damage, amount, cpuName, label, (data) => {
                 this.craft.btnLoading = false;
                 this.showCraftDialog = false;
+            }, (cpuResult) => {
+                console.log(cpuResult)
+                bus.emit('refreshCpuList', cpuResult);
             });
         },
         updateShowItems() {
             let filteredItems = this.items;
             if (this.showCraft === "可下单") {
                 filteredItems = filteredItems.filter(item => item.isCraftable);
+            }
+            if (this.showLiquid === "物品") {
+                filteredItems = filteredItems.filter(item => item.data.name !== "ae2fc:fluid_drop");
+            } else if (this.showLiquid === "液体") {
+                filteredItems = filteredItems.filter(item => item.data.name === "ae2fc:fluid_drop");
             }
 
             if (this.searchText) {
@@ -364,6 +385,9 @@ export default {
             this.updateShowItems();
         },
         showCraft() {
+            this.updateShowItems();
+        },
+        showLiquid() {
             this.updateShowItems();
         },
         searchType() {
