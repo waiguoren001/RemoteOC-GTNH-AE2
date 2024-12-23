@@ -16,6 +16,9 @@ export default {
             showMoniter: false,
         };
     },
+    created() {
+        this.showMoniter = localStorage.getItem("showMoniter") === "true" || false;
+    },
     methods: {
         handleSelect(index) {
             this.$router.push({ path: "/" + index.toLowerCase() });

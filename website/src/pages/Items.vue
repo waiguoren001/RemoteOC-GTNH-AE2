@@ -2,7 +2,7 @@
     <el-container style="height: 100%;" v-loading="loading">
         <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header-item">
             <el-card class="control-card" shadow="hover">
-                <div class="control-bar">
+                <div v-if="isMobile" class="control-bar">
                     <div class="segmented-container">
                         <el-segmented v-model="showCraft" :options="['全部', '可下单']" size="default" />
                         <el-segmented class="liquid-segmented" v-model="showLiquid" :options="['全部', '物品', '液体']"
@@ -23,10 +23,31 @@
                                 </el-select>
                             </template>
                         </el-input>
-
                         <el-button type="primary" @click="getItems">获取物品信息</el-button>
                     </div>
+                </div>
+                <div v-else class="control-bar">
+                    <div style="display: flex;">
+                        <el-segmented v-model="showCraft" :options="['全部', '可下单']" size="default" />
+                        <el-segmented style="margin: 0 16px;" v-model="showLiquid" :options="['全部', '物品', '液体']" size="default" />
+                        <el-input v-model="searchText"  class="item-search"
+                            placeholder="请输入信息以查询">
+                            <template #suffix>
+                                <el-icon class="el-input__icon">
+                                    <search />
+                                </el-icon>
+                            </template>
+                            <template #prepend>
+                                <el-select v-model="searchType" placeholder="查询类型" style="width: 100px">
+                                    <el-option label="物品名" value="title" />
+                                    <el-option label="标签名" value="label" />
+                                    <el-option label="name" value="name" />
+                                </el-select>
+                            </template>
+                        </el-input>
+                    </div>
 
+                    <el-button type="primary" @click="getItems">获取物品信息</el-button>
                 </div>
             </el-card>
         </el-header>
@@ -508,7 +529,7 @@ export default {
     }
 
     .item-search {
-        width: 40vw;
+        width: 30vw;
         max-width: 400px;
         margin-left: 10px;
     }

@@ -1,16 +1,34 @@
 <template>
     <el-container style="height: 100%;" v-loading="loading">
-        <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header">
+        <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header-cpu">
             <el-card class="control-card" shadow="hover">
                 <div class="control-bar">
-                    <span>最近更新时间: {{ lastCpuUpdate }}</span>
-                    <el-button type="primary" @click="getCpuList">获取CPU信息</el-button>
+                    <div class="control-info">
+                        <span>最近更新时间: {{ lastCpuUpdate }}</span>
+                        <el-button type="primary" @click="getCpuList">获取CPU信息</el-button>
+                    </div>
+                    <div v-if="isMobile" class="cpu-select-container">
+                        <el-select-v2 
+                            v-model="selectCpu" 
+                            :options="cpuList"
+                            :props="selectProps"
+                            @change="handleCpuSelect"
+                            placeholder="请选择CPU" 
+                            style="width: 100%"
+                        >
+                            <template #default="{ item }">
+                                <el-tag v-if="item.busy" type="warning" effect="light">繁忙</el-tag>
+                                <el-tag v-else type="success" effect="light">空闲</el-tag>
+                                <span style="margin-left: 10px;">{{ item.name }}</span>
+                            </template>
+                        </el-select-v2>
+                    </div>
                 </div>
             </el-card>
         </el-header>
         <el-main style="width: 100%;">
-            <el-row :gutter="20" style="height: 100%; width: 100%;">
-                <el-col :span="6" style="height: 100%;">
+            <el-row :gutter="20" class="cpu-container-2">
+                <el-col v-if="!isMobile" :span="6" style="height: 100%;">
                     <el-card class="box-card">
                         <el-menu default-active="0" v-model="cpuSelected" @select="handleCpuSelect">
                             <el-menu-item v-for="(cpu, index) in cpuList" :key="index" :index="index.toString()">
@@ -35,11 +53,10 @@
                         </el-menu>
                     </el-card>
                 </el-col>
-
-                <el-col :span="18" style="height: 100%;">
+                <el-col :span="isMobile ? 24 : 18" class="cpu-detail">
                     <el-card class="box-card">
                         <el-row v-if="currentCpu.items.length" :gutter="20">
-                            <el-col v-for="(item, index) in currentCpu.items" :key="index" :span="8">
+                            <el-col v-for="(item, index) in currentCpu.items" :key="index" :span="isMobile ? 24 : 8">
                                 <el-card :class="'item-card ' + getItemCardClass(item)" shadow="hover">
                                     <div class="image-wrapper">
                                         <el-image :src="item.image || ''" class="component-image" :alt="item.title"
@@ -53,7 +70,9 @@
                                                 </el-skeleton>
                                             </template>
                                             <template #error>
-                                                <el-icon><QuestionFilled /></el-icon>
+                                                <el-icon>
+                                                    <QuestionFilled />
+                                                </el-icon>
                                             </template>
                                         </el-image>
                                         <div class="item-info">
@@ -76,9 +95,11 @@
 </template>
 
 <script>
+import bus from 'vue3-eventbus';
+import { inject } from 'vue';
+
 import { fetchStatus, addTask, createPollingController } from '@/utils/task'
 import itemUtil from "@/utils/items";
-import bus from 'vue3-eventbus';
 
 export default {
     name: 'Cpus',
@@ -90,11 +111,22 @@ export default {
             lastCpuUpdate: "",
             cpuList: [],
             currentCpu: { items: [] },
+            selectCpu: "",
             cpuSelected: 0,
             pollingController: null,
+            selectProps: {
+                label: 'name',
+                value: 'id',
+            },
         };
     },
     created() {
+    },
+    setup() {
+        const isMobile = inject('isMobile');
+        return {
+            isMobile,
+        };
     },
     mounted() {
         this.startPolling("getCpuDetailList");
@@ -215,9 +247,11 @@ export default {
 
                     let cpus = result.data;
                     let cpuList = [];
+                    let i = 0;
                     for (let cpu of cpus) {
                         let name = cpu.name !== "" ? cpu.name : `CPU #${cpuList.length + 1}`;
                         cpuList.push({
+                            id: i,
                             name: name,
                             busy: cpu.busy,
                             coprocessors: cpu.coprocessors,
@@ -229,6 +263,7 @@ export default {
                             this.currentCpu = cpuList[cpuList.length - 1];
                             this.cpuSelected = cpuList.length - 1;
                         }
+                        i++;
                     }
 
                     // 当选择的CPU不存在默认选择第一个CPU
@@ -236,6 +271,9 @@ export default {
                         this.currentCpu = cpuList[0];
                         this.cpuSelected = 0;
                     }
+
+                    // cpuList按名字排序
+                    cpuList.sort((a, b) => a.name.localeCompare(b.name));
                     this.cpuList = cpuList;
                 } catch (e) {
                     console.error(e, data);
@@ -295,38 +333,89 @@ export default {
     padding: 8px;
 }
 
-.control-header {
-    width: calc(100% - 20px);
-    margin-top: 10px;
+@media screen and (min-width: 768px) {
+    .control-header-cpu {
+        width: calc(100% - 20px);
+        margin-top: 10px;
+    }
 }
 
-.control-header .el-card__body {
+@media screen and (max-width: 768px) {
+    .control-header-cpu {
+        width: 100%;
+        margin-top: 10px;
+        height: 120px !important;
+    }
+}
+
+.control-header-cpu .el-card__body {
     height: 100%;
     padding: 8px;
 }
 
-.control-header .el-loading-spinner .circular {
+.control-header-cpu .el-loading-spinner .circular {
     height: 24px;
     width: 24px;
 }
 </style>
 
 <style scoped>
-.el-container {
-    height: 100%;
+@media screen and (min-width: 768px) {
+    .cpu-container-2 {
+        width: 100%;
+        height: 100%;
+    }
+
+    .control-card {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .control-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
-.control-card {
-    padding: 10px;
-    margin-bottom: 10px;
+@media screen and (max-width: 768px) {
+    .cpu-container-2 {
+        height: 100%;
+    }
+
+    .control-card {
+        padding: 10px;
+        margin-bottom: 10px;
+        height: 96px;
+    }
+
+    .control-bar {
+        height: calc(100% - 16px);
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
-.control-bar {
+.control-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
 }
 
+.cpu-select-container {
+    width: 100%;
+}
+
+.cpu-detail {
+    height: 100%;
+}
+
+.el-container {
+    height: 100%;
+}
 
 
 .box-card {
@@ -363,7 +452,8 @@ export default {
 
 @media (max-width: 1300px) {
     .cpu-output .output-image {
-        display: none; /* 隐藏 cpu-output */
+        display: none;
+        /* 隐藏 cpu-output */
     }
 }
 

@@ -72,7 +72,6 @@ export default {
     data() {
         return {
             pageTitle: "",
-            showMoniter: false,
             loadingInstance: null,
             itemProgress: 0,
             fluidsProgress: 0,
@@ -83,7 +82,6 @@ export default {
     },
     created() {
         this.pageTitle = localStorage.getItem("pageTitle") || "GTNH赛博监工";
-        this.showMoniter = localStorage.getItem("showMoniter") === "true" || false;
         document.title = this.pageTitle;
         this.loadItemData();
     },
