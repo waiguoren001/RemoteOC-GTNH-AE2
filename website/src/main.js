@@ -26,5 +26,15 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.provide('detailManageTable', ref(true));
 
+
+// 判断是否为移动设备
+const isMobile = ref(window.innerWidth <= 768);
+function updateDeviceType() {
+  isMobile.value = window.innerWidth <= 768;
+}
+window.addEventListener('resize', updateDeviceType);
+app.provide('isMobile', isMobile);
+
+
 app.mount('#app')
 

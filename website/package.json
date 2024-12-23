@@ -1,9 +1,9 @@
 {
-  "name": "remote-oc",
+  "name": "remote-oc-gtnh-ae2",
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "dev": "vite --port 80",
+    "dev": "vite --port 80 --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview"
   },

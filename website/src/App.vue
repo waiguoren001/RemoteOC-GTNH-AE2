@@ -2,6 +2,10 @@
     <el-container style="height: 100%;">
         <el-header style="height: 60px;">
             <div class="toolbar">
+                <div v-if="isMobile" class="content-left">
+                    <!-- <el-button size="large" v-if="isMobile" @click="toggleDrawer" icon="Expand"></el-button> -->
+                    <el-icon size="24" @click="toggleDrawer"><Expand /></el-icon>
+                </div>
                 <div class="title-container">
                     <el-link href="/" :underline="false">
                         <h1 class="title">{{ pageTitle }}</h1>
@@ -23,16 +27,15 @@
             </div>
         </el-header>
         <el-container style="height: 100%;">
-            <el-aside width="200px" style="height: calc(100vh - 60px);">
-                <el-menu default-active="Index" class="el-menu-vertical-demo" @select="handleSelect" style="height: 100%;">
-                    <el-menu-item index="Index">主页</el-menu-item>
-                    <el-menu-item v-if="showMoniter" index="Monitor">监控</el-menu-item>
-                    <el-menu-item index="Items">终端</el-menu-item>
-                    <el-menu-item index="Cpus">CPUs</el-menu-item>
-                    <el-menu-item index="Tasks">任务</el-menu-item>
-                    <el-menu-item index="Settings">设置</el-menu-item>
-                </el-menu>
+            <!-- PC 侧边栏 -->
+            <el-aside v-if="!isMobile" width="200px" style="height: calc(100vh - 60px);">
+                <PageMenu />
             </el-aside>
+
+            <!-- 移动端抽屉 -->
+            <el-drawer v-if="isMobile" v-model="drawerVisible" :title="pageTitle" direction="ltr" size="60%">
+                <PageMenu />
+            </el-drawer>
             <!-- 使用 v-if 控制子组件渲染 -->
             <el-main style="height: calc(100vh - 60px); padding: 0;">
                 <router-view v-if="isDataLoaded" v-slot="{ Component }">
@@ -43,17 +46,28 @@
             </el-main>
         </el-container>
     </el-container>
-    <el-progress v-if="itemProgress + fluidsProgress < 100" :percentage="itemProgress + fluidsProgress" :status="progressStatus" striped striped-flow :stroke-width="15" :text-inside="true"
+    <el-progress v-if="itemProgress + fluidsProgress < 100" :percentage="itemProgress + fluidsProgress"
+        :status="progressStatus" striped striped-flow :stroke-width="15" :text-inside="true"
         style="position: fixed; top: calc(50% + 100px); left: 50%; transform: translateX(-50%); width: 20%; z-index: 9999;" />
 </template>
 
 <script>
-import itemUtil from "@/utils/items";
 import { ElLoading, ElMessage, ElProgress } from "element-plus";
+import { inject } from "vue";
+
+import itemUtil from "@/utils/items";
+import PageMenu from "@/components/PageMenu.vue";
 
 export default {
-    component: {
-        ElProgress
+    components: {
+        ElProgress,
+        PageMenu,
+    },
+    setup() {
+        const isMobile = inject('isMobile');
+        return {
+            isMobile,
+        };
     },
     data() {
         return {
@@ -64,6 +78,7 @@ export default {
             fluidsProgress: 0,
             progressStatus: "",
             isDataLoaded: false,
+            drawerVisible: false,
         };
     },
     created() {
@@ -74,8 +89,14 @@ export default {
     },
 
     methods: {
+        toggleDrawer() {
+            this.drawerVisible = !this.drawerVisible;
+        },
         handleSelect(key, keyPath) {
             this.$router.push({ name: key });
+            if (this.isMobile) {
+                this.drawerVisible = false;
+            }
         },
         loadItemData() {
             this.loadingInstance = ElLoading.service({
@@ -143,6 +164,14 @@ export default {
     right: 20px;
 }
 
+.toolbar .content-left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-grow: 1;
+    height: 100%;
+}
+
 .toolbar .title-container {
     display: flex;
     align-items: center;
@@ -160,11 +189,15 @@ export default {
 .title {
     font-size: 18px;
 }
+
+.el-menu-vertical-page {
+    border: none;
+}
 </style>
 
 <style>
 /* 隐藏默认的加载图标 */
-.custom-loading .el-loading-spinner .circular > circle {
+.custom-loading .el-loading-spinner .circular>circle {
     display: none;
 }
 

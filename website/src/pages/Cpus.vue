@@ -53,7 +53,7 @@
                                                 </el-skeleton>
                                             </template>
                                             <template #error>
-                                                <el-icon><icon-picture /></el-icon>
+                                                <el-icon><QuestionFilled /></el-icon>
                                             </template>
                                         </el-image>
                                         <div class="item-info">
