@@ -1,12 +1,12 @@
 <template>
     <el-container style="height: 100%;">
-        <el-header class="control-header-item">
+        <el-header class="control-header-task">
             <el-card class="control-card" shadow="hover">
                 <div class="control-bar">
                     <span>最近更新时间: {{ lastUpdate }}</span>
                     <div style="text-align: right;">
-                        <el-button type="primary" @click="openTaskMessageBox">添加任务监控</el-button>
-                        <el-button type="primary" @click="loadTasks">刷新任务列表</el-button>
+                        <el-button type="primary" :size="isMobile ? 'small': 'large'" @click="openTaskMessageBox">添加任务监控</el-button>
+                        <el-button type="primary" :size="isMobile ? 'small': 'large'" @click="loadTasks">刷新任务列表</el-button>
                     </div>
                 </div>
             </el-card>
@@ -15,8 +15,11 @@
             <el-card class="box-card">
                 <el-auto-resizer>
                     <template #default="{ height, width }">
-                        <el-table-v2 :columns="columns" :data="tasks" :width="width" :height="height"
-                            :header-height="50" :row-height="75" />
+                        <el-table-v2 
+                            :columns="columns" :data="tasks" 
+                            :width="width" :height="height"
+                            :header-height="50" :row-height="75"  
+                        />
                     </template>
                 </el-auto-resizer>
             </el-card>
@@ -33,7 +36,8 @@
 </template>
 
 <script>
-import { h } from 'vue';
+import { h, inject } from 'vue';
+
 import { ElMessage, ElMessageBox, ElButton } from 'element-plus'
 import { localTask, fetchStatus } from '@/utils/task'
 
@@ -46,7 +50,7 @@ export default {
             mainLoading: false,
             lastUpdate: "",
             columns: [
-                { dataKey: 'taskId', title: '任务ID', width: 350, align: 'center', fixed: true },
+                { dataKey: 'taskId', title: '任务ID', width: 350, align: 'center', fixed: false },
                 { dataKey: 'type', title: '类型', width: 100, align: 'center', },
                 { dataKey: 'data.created_time', title: '创建时间', width: 250, align: 'center', },
                 { dataKey: 'data.pending_time', title: '执行时间', width: 250, align: 'center', },
@@ -55,7 +59,7 @@ export default {
                 {
                     key: '操作',
                     title: '操作',
-                    width: 250,
+                    width: 150,
                     align: 'center',
                     fixed: 'right',
                     cellRenderer: (data) => (
@@ -79,6 +83,12 @@ export default {
                 id: "",
                 data: ""
             }
+        };
+    },
+    setup() {
+        const isMobile = inject('isMobile');
+        return {
+            isMobile,
         };
     },
     methods: {
@@ -168,18 +178,18 @@ export default {
 </script>
 
 <style>
-.box-card .el-card__body {
-    padding: 16px;
-}
-
-.control-header-item {
+.control-header-task {
     width: 100%;
     margin-top: 10px;
 }
 
-.control-header-item .el-loading-spinner .circular {
+.control-header-task .el-loading-spinner .circular {
     height: 24px;
     width: 24px;
+}
+
+.control-header-task .el-card__body {
+    padding: 0;
 }
 
 .el-popper {
@@ -191,6 +201,7 @@ export default {
 }
 
 .box-card .el-card__body {
+    padding: 16px;
     height: 100%;
 }
 </style>
@@ -218,6 +229,15 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+@media screen and (max-width: 768px) {
+    .control-bar {
+        height: 46px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
 }
 
 .words {
