@@ -3,27 +3,30 @@
         <el-header v-loading="headerLoading" :element-loading-text="headerLoadingText" class="control-header-item">
             <el-card class="control-card" shadow="hover">
                 <div class="control-bar">
-                    <div style="display: flex;">
+                    <div class="segmented-container">
                         <el-segmented v-model="showCraft" :options="['全部', '可下单']" size="default" />
-                        <el-segmented style="margin: 0 16px;" v-model="showLiquid" :options="['全部', '物品', '液体']" size="default" />
-                        <el-input v-model="searchText" style="margin-left: 10px; width: 40vw; max-width: 400px;"
-                            placeholder="请输入信息以查询">
+                        <el-segmented class="liquid-segmented" v-model="showLiquid" :options="['全部', '物品', '液体']"
+                            size="default" />
+                    </div>
+                    <div class="search-container">
+                        <el-input v-model="searchText" class="item-search" placeholder="请输入信息以查询">
                             <template #suffix>
                                 <el-icon class="el-input__icon">
                                     <search />
                                 </el-icon>
                             </template>
                             <template #prepend>
-                                <el-select v-model="searchType" placeholder="查询类型" style="width: 100px">
+                                <el-select v-model="searchType" placeholder="查询类型" style="width: 75px">
                                     <el-option label="物品名" value="title" />
                                     <el-option label="标签名" value="label" />
                                     <el-option label="name" value="name" />
                                 </el-select>
                             </template>
                         </el-input>
+
+                        <el-button type="primary" @click="getItems">获取物品信息</el-button>
                     </div>
 
-                    <el-button type="primary" @click="getItems">获取物品信息</el-button>
                 </div>
             </el-card>
         </el-header>
@@ -42,19 +45,23 @@
                                     </el-skeleton>
                                 </template>
                                 <template #error>
-                                    <el-icon><QuestionFilled /></el-icon>
+                                    <el-icon>
+                                        <QuestionFilled />
+                                    </el-icon>
                                 </template>
                             </el-image>
 
                             <div class="item-info">
                                 <div class="ellipsis" :title="item.title">{{ item.title }}</div>
                                 <div class="words" :title="item.label">{{ item.label }}</div>
-                                <div>数量: {{ item.size }}</div>
+                                <div class="words" :title="item.size">数量: {{ item.size }}</div>
                                 <div v-if="item.isCraftable"><el-tag size="small" type="success">可合成</el-tag></div>
                                 <el-tooltip placement="top">
                                     <template #content>
                                         <div style="font-size: 12px; color: #aaa;">Tooltip</div>
                                         <div>{{ item.title }}</div>
+                                        <div v-if="item.size > 0">存储物品: <span @click="copyToClipboard(item.size)">{{
+                                            item.size }}</span></div>
                                         <div class="words copy-container" v-for="(info, index) in item.tooltip"
                                             :key="index" @click="copyToClipboard(info)">
                                             {{ info }}
@@ -88,15 +95,21 @@
                     </el-card>
                 </div>
                 <div class="pagination-container">
-                    <span>最近更新时间: {{ lastUpdate }}</span>
-                    <el-pagination v-model:current-page="page.current" v-model:page-size="page.size"
-                        :page-sizes="[50, 100, 200, 400]" size="small" layout="total, sizes, prev, pager, next, jumper"
+                    <div class="pagination-info">
+                        <span style="display: flex;">最近更新时间: {{ lastUpdate }}</span>
+                        <span v-if="isMobile" style="display: flex;">共 {{ page.total }} 条</span>
+                    </div>
+                    <el-pagination style="display: flex;" v-model:current-page="page.current"
+                        v-model:page-size="page.size" :pager-count="isMobile ? 5 : 7" :page-sizes="[50, 100, 200, 400]"
+                        size="small"
+                        :layout="isMobile ? 'sizes, prev, pager, next' : 'total, sizes, prev, pager, next, jumper'"
                         :total="page.total" @size-change="handlePaginationChange"
                         @current-change="handlePaginationChange" />
                 </div>
             </el-card>
         </el-main>
-        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" width="500" align-center>
+        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" style="min-width: 250px; max-width: 400px;"
+            align-center>
             <el-form :model="craft">
                 <el-form-item label="下单数量">
                     <el-input v-model="craft.amount" type="number" placeholder="请输入下单数量" />
@@ -132,11 +145,12 @@
 </template>
 
 <script>
+import { inject } from 'vue';
+import bus from 'vue3-eventbus';
+
 import { fetchStatus, addTask, createCraftTask, createPollingController } from '@/utils/task'
-import { Search } from '@element-plus/icons-vue'
 import itemUtil from "@/utils/items";
 import nbt from "@/utils/nbt"
-import bus from 'vue3-eventbus';
 
 export default {
     name: 'Items',
@@ -173,7 +187,11 @@ export default {
             }
         };
     },
-    created() {
+    setup() {
+        const isMobile = inject('isMobile');
+        return {
+            isMobile,
+        };
     },
     mounted() {
         this.startPolling("getAllItems");
@@ -405,19 +423,35 @@ export default {
     padding: 16px;
 }
 
-.item-card {
-    flex: 0 0 300px;
 
-}
 
 .item-card .el-card__body {
     height: 100%;
     padding: 8px;
 }
 
-.control-header-item {
-    width: 100%;
-    margin-top: 10px;
+@media screen and (min-width: 768px) {
+    .control-header-item {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .item-card {
+        flex: 0 0 300px;
+    }
+}
+
+/* 移动端适配 control-card 高100px */
+@media screen and (max-width: 768px) {
+    .control-header-item {
+        width: 100%;
+        margin-top: 10px;
+        height: 120px !important;
+    }
+
+    .item-card {
+        flex: 0 0 calc(100% - 16px);
+    }
 }
 
 .control-header-item .el-card__body {
@@ -428,6 +462,11 @@ export default {
 .control-header-item .el-loading-spinner .circular {
     height: 24px;
     width: 24px;
+}
+
+.search-container .el-select__wrapper {
+    padding-right: 5px;
+    padding-left: 5px;
 }
 
 .el-popper {
@@ -452,33 +491,106 @@ export default {
     height: 100%;
 }
 
-.card-container {
-    overflow-y: auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: flex-start;
-    height: calc(100% - 50px);
+@media screen and (min-width: 768px) {
+    .control-card {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .control-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .liquid-segmented {
+        margin: 0 16px;
+    }
+
+    .item-search {
+        width: 40vw;
+        max-width: 400px;
+        margin-left: 10px;
+    }
+
+    .card-container {
+        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: flex-start;
+        height: calc(100% - 14px - 36px);
+    }
+
+    .pagination-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: auto 0;
+        height: 36px;
+        padding-right: 10px;
+    }
 }
 
-.pagination-container {
+/* 移动端适配 control-card 高100px */
+@media screen and (max-width: 768px) {
+    .control-card {
+        height: 100px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .control-bar {
+        height: calc(100% - 20px);
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .item-search {
+        width: 50vw;
+        max-width: 400px;
+    }
+
+    .card-container {
+        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: flex-start;
+        height: calc(100% - 14px - 50px);
+    }
+
+    .pagination-info {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .pagination-container {
+        display: flex;
+        align-items: flex-start;
+        margin: auto 0;
+        height: 50px;
+        justify-content: space-evenly;
+        flex-direction: column;
+    }
+
+}
+
+.segmented-container {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: auto 0;
-    height: 36px;
-    padding-right: 10px;
 }
 
-.control-card {
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.control-bar {
+.search-container {
+    width: 100%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
 .ellipsis {
