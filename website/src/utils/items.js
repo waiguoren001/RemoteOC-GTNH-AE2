@@ -1,5 +1,7 @@
 import axios from "axios";
+import pako from "pako";
 import Setting from '@/utils/setting';
+
 
 const itemUtil = {
     items: null,
@@ -24,6 +26,9 @@ const itemUtil = {
     loadItems(progressCallback) {
         if (!this.items) {
             let url = (Setting.get("cdnPath")) + "/items.json";
+            if (Setting.get("useGzip")) {
+                url += ".gz";
+            }
             axios.get(url, {
                 onDownloadProgress: (event) => {
                     if (event.lengthComputable) {
@@ -52,6 +57,9 @@ const itemUtil = {
     loadFluids(progressCallback) {
         if (!this.fluids) {
             let url = (Setting.get("cdnPath")) + "/fluids.json";
+            if (Setting.get("useGzip")) {
+                url += ".gz";
+            }
             axios.get(url, {
                 onDownloadProgress: (event) => {
                     if (event.lengthComputable) {

@@ -7,6 +7,7 @@ function Setting() {
         { name: '服务端地址', field: 'backendUrl', type: 'input', placeholder: 'Backend URL', defaultValue: '' },
         { name: '服务端令牌', field: 'token', type: 'password', placeholder: 'Token', defaultValue: '' },
         { name: '数据文件URL', field: 'cdnPath', type: 'input', placeholder: '数据文件的URL地址目录，用于加速物品和流体数据加载', defaultValue: '' },
+        { name: '数据Gzip解压/压缩', field: 'useGzip', type: 'checkbox', tooltip: '选择此选项后，会请求压缩后的数据文件<br/>可能会增加计算负担<br/>当你的代理服务器例如nginx启用了gzip压缩，请关闭此选项', defaultValue: false },
     ];
 }
 
