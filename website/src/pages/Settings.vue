@@ -12,7 +12,7 @@
                         <el-input v-model="configValues[config.field]" :placeholder="config.placeholder"></el-input>
                     </template>
                     <template v-else-if="config.type === 'checkbox' && config.tooltip">
-                        <el-tooltip effect="dark" placement="right" raw-content :content="config.tooltip">
+                        <el-tooltip effect="dark" placement="bottom" raw-content :content="config.tooltip">
                             <el-checkbox v-model="configValues[config.field]"></el-checkbox>
                         </el-tooltip>
                     </template>

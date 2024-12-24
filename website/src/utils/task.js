@@ -1,6 +1,7 @@
 import Requests from './requests';
 import { ElMessage, ElNotification } from 'element-plus';
 import Setting from '@/utils/setting';
+import pako from "pako";
 
 
 // 轮询获取任务状态
@@ -10,10 +11,20 @@ const fetchStatus = async (task_id, handleResult, handleUploading, handleComplet
             ElMessage.error(`请先设置后端地址！`)
             return
         }
-        const response = await Requests.get('/api/cmd/status', { task_id, remove: false });
+        const response = await Requests.get('/api/cmd/status', { task_id, remove: false, use_gzip: Setting.get('useTaskGzip') });
         const data = response.data;
         if (data.code === 200) {
-            if (data.data.result && data.data.result != [] && data.data.status !== 'uploading') {
+            if (data.data.result && data.data.status !== 'uploading') {
+                if (data.data.gzip) {
+                    // 解压缩
+                    let binaryString = atob(data.data.result);
+                    let binaryData = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        binaryData[i] = binaryString.charCodeAt(i);
+                    }
+                    let result = pako.inflate(binaryData, { to: 'string' });
+                    data.data.result = JSON.parse(result);
+                }
                 if (handleResult) handleResult(data.data);
             }
             if (data.data.status === 'uploading') {

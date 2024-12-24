@@ -182,7 +182,7 @@ async def get_task_status(
         if task_id not in timer_task_config and task_id not in task_config:
             task_manager.remove_task(task_id)
     if use_gzip and task.get("results"):
-        gzip_result = gzip.compress(json.dumps(task.get("results")).encode())
+        gzip_result = gzip.compress(json.dumps(task.get("results")).encode(), compresslevel=6)
         result = base64.b64encode(gzip_result).decode()
     else:
         result = task.get("results")
@@ -190,7 +190,7 @@ async def get_task_status(
         "code": 200,
         "message": "success",
         "data": {
-            "gizp": use_gzip,
+            "gzip": use_gzip,
             "taskId": task_id,
             "status": status,
             "result": result,

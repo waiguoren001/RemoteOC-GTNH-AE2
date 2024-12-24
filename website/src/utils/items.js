@@ -1,5 +1,4 @@
 import axios from "axios";
-import pako from "pako";
 import Setting from '@/utils/setting';
 
 
