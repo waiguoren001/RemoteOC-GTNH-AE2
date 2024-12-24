@@ -3,6 +3,8 @@ from utils import *
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request
 from models import *
 import uuid
+import gzip
+import base64
 from typing import Optional
 
 
@@ -163,7 +165,11 @@ async def add_command(data: AddCommandModel):
 
 
 @router.get("/status", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
-async def get_task_status(task_id: str = Query(..., description="任务id"), remove: bool = Query(True, description="如果任务为完成状态是否删除")):
+async def get_task_status(
+    task_id: str = Query(..., description="任务id"), 
+    remove: bool = Query(True, description="如果任务为完成状态是否删除"),
+    use_gzip: bool = Query(False, description="对reuslt进行gzip压缩并返回base64编码"),
+):
     """
     获取指定task_id的任务状态
     """
@@ -175,13 +181,19 @@ async def get_task_status(task_id: str = Query(..., description="任务id"), rem
     if status == COMPLETED and remove:
         if task_id not in timer_task_config and task_id not in task_config:
             task_manager.remove_task(task_id)
+    if use_gzip and task.get("results"):
+        gzip_result = gzip.compress(json.dumps(task.get("results")).encode())
+        result = base64.b64encode(gzip_result).decode()
+    else:
+        result = task.get("results")
     return {
         "code": 200,
-        "message": "Task is still in progress",
+        "message": "success",
         "data": {
+            "gizp": use_gzip,
             "taskId": task_id,
             "status": status,
-            "result": task.get("results", None),
+            "result": result,
             "created_time": task.get("created_time"),
             "pending_time": task.get("pending_time"),
             "completed_time": task.get("completed_time"),
