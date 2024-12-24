@@ -172,6 +172,7 @@ import bus from 'vue3-eventbus';
 import { fetchStatus, addTask, createCraftTask, createPollingController } from '@/utils/task'
 import itemUtil from "@/utils/items";
 import nbt from "@/utils/nbt"
+import Setting from '@/utils/setting';
 
 export default {
     name: 'Items',
@@ -243,7 +244,7 @@ export default {
                 try {
                     let result = data.result;
                     this.lastUpdate = data.completed_time ? data.completed_time.split(".")[0].replace("T", " ") : '未知';
-                    let isShowLiquidImage = localStorage.getItem('showFluid') === "true" || true;
+                    let isShowLiquidImage = Setting.get("showFluid");
                     let items = result;
                     let new_items = []
                     for (let item of items) {

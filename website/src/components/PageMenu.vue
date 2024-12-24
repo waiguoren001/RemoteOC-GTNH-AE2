@@ -10,6 +10,8 @@
 </template>
 
 <script>
+import Setting from '@/utils/setting';
+
 export default {
     data() {
         return {
@@ -17,7 +19,7 @@ export default {
         };
     },
     created() {
-        this.showMoniter = localStorage.getItem("showMoniter") === "true" || false;
+        this.showMoniter = Setting.get("showMoniter");
     },
     methods: {
         handleSelect(index) {

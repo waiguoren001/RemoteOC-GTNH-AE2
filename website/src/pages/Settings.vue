@@ -32,28 +32,14 @@
 </template>
 
 <script>
+import Setting from '@/utils/setting';
+
 export default {
     name: 'Settings',
     data() {
-        const defaultConfigItems = [
-            { name: '页面标题', field: 'pageTitle', type: 'input', placeholder: 'Title', defaultValue: 'GTNH赛博监工' },
-            { name: '启用监控页面', field: 'showMoniter', type: 'checkbox', tooltip: '选择此选项后，可以显示监控信息<br/>必须在OC客户端中启用并配置moniter插件！', defaultValue: false },
-            { name: '液滴显示流体图片', field: 'showFluid', type: 'checkbox', defaultValue: true },
-            { name: '下单后刷新CPU', field: 'refreshCPU', type: 'checkbox', tooltip: '选择此选项后，在下单结束会同时返回CPU信息<br/>当需要频繁下单或CPU信息量较大时谨慎选择！', defaultValue: false },
-            { name: '服务端地址', field: 'backendUrl', type: 'input', placeholder: 'Backend URL', defaultValue: '' },
-            { name: '服务端令牌', field: 'token', type: 'password', placeholder: 'Token', defaultValue: '' },
-            { name: '数据文件URL', field: 'cdnPath', type: 'input', placeholder: '数据文件的URL地址目录，用于加速物品和流体数据加载', defaultValue: '' },
-        ];
-
-        // 初始化配置值
-        const initialConfigValues = {};
-        defaultConfigItems.forEach(config => {
-            const savedValue = localStorage.getItem(config.field);
-            initialConfigValues[config.field] = savedValue === null
-                ? config.defaultValue
-                : (config.type === 'checkbox' ? savedValue === 'true' : savedValue);
-        });
-
+        const defaultConfigItems = Setting.defaultConfigItems;
+        const initialConfigValues = Setting.getAll();
+        console.log(Setting)
         return {
             configItems: defaultConfigItems,
             configValues: initialConfigValues,
@@ -62,7 +48,7 @@ export default {
     methods: {
         saveSettings() {
             Object.keys(this.configValues).forEach(field => {
-                localStorage.setItem(field, this.configValues[field]);
+                Setting.set(field, this.configValues[field]);
             });
             this.$confirm('设置已保存，是否立即刷新网页以应用更改？', '确认', {
                 confirmButtonText: '确定',

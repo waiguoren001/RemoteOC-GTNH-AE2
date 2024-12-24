@@ -57,6 +57,7 @@ import { inject } from "vue";
 
 import itemUtil from "@/utils/items";
 import PageMenu from "@/components/PageMenu.vue";
+import Setting from '@/utils/setting';
 
 export default {
     components: {
@@ -82,7 +83,7 @@ export default {
         };
     },
     created() {
-        this.pageTitle = localStorage.getItem("pageTitle") || "GTNH赛博监工";
+        this.pageTitle = Setting.get("pageTitle");
         document.title = this.pageTitle;
         this.loadItemData();
     },

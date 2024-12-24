@@ -1,4 +1,5 @@
 import axios from "axios";
+import Setting from '@/utils/setting';
 
 const itemUtil = {
     items: null,
@@ -22,7 +23,7 @@ const itemUtil = {
 
     loadItems(progressCallback) {
         if (!this.items) {
-            let url = (localStorage.getItem("cdnPath") || "") + "/items.json";
+            let url = (Setting.get("cdnPath")) + "/items.json";
             axios.get(url, {
                 onDownloadProgress: (event) => {
                     if (event.lengthComputable) {
@@ -50,7 +51,7 @@ const itemUtil = {
 
     loadFluids(progressCallback) {
         if (!this.fluids) {
-            let url = (localStorage.getItem("cdnPath") || "") + "/fluids.json";
+            let url = (Setting.get("cdnPath")) + "/fluids.json";
             axios.get(url, {
                 onDownloadProgress: (event) => {
                     if (event.lengthComputable) {

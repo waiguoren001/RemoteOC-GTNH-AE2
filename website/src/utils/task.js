@@ -1,11 +1,12 @@
 import Requests from './requests';
 import { ElMessage, ElNotification } from 'element-plus';
+import Setting from '@/utils/setting';
 
 
 // 轮询获取任务状态
 const fetchStatus = async (task_id, handleResult, handleUploading, handleComplete, interval = 1000, pollingController = createPollingController()) => {
     try {
-        if (!localStorage.getItem('backendUrl')) {
+        if (!Setting.get('backendUrl') || Setting.get('backendUrl') === '') {
             ElMessage.error(`请先设置后端地址！`)
             return
         }
@@ -161,7 +162,7 @@ const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, label, callb
 
     let commands = [command];
 
-    let refreshCPU = localStorage.getItem('refreshCPU') === "true" || false;
+    let refreshCPU = Setting.get('refreshCPU');
     if (refreshCPU) {
         commands.push("return ae.getCpuList(true)");  // 刷新CPU
     }

@@ -1,11 +1,13 @@
 import axios from 'axios';
+import Setting from '@/utils/setting';
+
 
 class Requests {
     constructor() {
         this.axiosInstance = axios.create({
-            baseURL: localStorage.getItem('backendUrl'),
+            baseURL: Setting.get('backendUrl'),
             headers: {
-                'x-server-token': localStorage.getItem('token'),
+                'x-server-token': Setting.get('token'),
             },
         });
     }
