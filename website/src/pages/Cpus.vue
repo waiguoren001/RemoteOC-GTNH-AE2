@@ -261,13 +261,8 @@ export default {
                         if (previousCpuName && previousCpuName === name) {
                             this.currentCpu = cpuList[cpuList.length - 1];
                             this.cpuSelected = cpuList.length - 1;
+                            this.selectCpu = cpuList.length - 1;
                         }
-                    }
-
-                    // 当选择的CPU不存在默认选择第一个CPU
-                    if (!this.currentCpu.name) {
-                        this.currentCpu = cpuList[0];
-                        this.cpuSelected = 0;
                     }
 
                     // cpuList按名字排序
@@ -276,6 +271,13 @@ export default {
                     cpuList.forEach((cpu, index) => {
                         cpu.id = index;
                     });
+
+                    // 当选择的CPU不存在默认选择第一个CPU
+                    if (!this.currentCpu.name) {
+                        this.currentCpu = cpuList[0];
+                        this.cpuSelected = 0;
+                        this.selectCpu = 0;
+                    }
                     this.cpuList = cpuList;
                 } catch (e) {
                     console.error(e, data);
