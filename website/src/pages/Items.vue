@@ -66,7 +66,7 @@
                                     </el-skeleton>
                                 </template>
                                 <template #error>
-                                    <el-icon>
+                                    <el-icon size="40" class="unknow-icon">
                                         <QuestionFilled />
                                     </el-icon>
                                 </template>
@@ -667,6 +667,15 @@ export default {
     right: 8px;
     font-size: 20px;
     cursor: pointer;
+}
+
+.unknow-icon {
+    /* 居中 */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
 }
 
 .craft-icon {

@@ -34,7 +34,7 @@
 
             <!-- 移动端抽屉 -->
             <el-drawer v-if="isMobile" v-model="drawerVisible" :title="pageTitle" direction="ltr" size="60%">
-                <PageMenu />
+                <PageMenu :close-drawer="closeDrawer" />
             </el-drawer>
             <!-- 使用 v-if 控制子组件渲染 -->
             <el-main style="height: calc(100vh - 60px); padding: 0;">
@@ -91,6 +91,9 @@ export default {
     methods: {
         toggleDrawer() {
             this.drawerVisible = !this.drawerVisible;
+        },
+        closeDrawer() {
+            this.drawerVisible = false;
         },
         handleSelect(key, keyPath) {
             this.$router.push({ name: key });

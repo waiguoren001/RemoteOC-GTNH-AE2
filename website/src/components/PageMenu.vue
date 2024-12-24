@@ -13,6 +13,12 @@
 import Setting from '@/utils/setting';
 
 export default {
+    props: {
+        closeDrawer: {
+            type: Function,
+            default: null,
+        },
+    },
     data() {
         return {
             showMoniter: false,
@@ -24,6 +30,9 @@ export default {
     methods: {
         handleSelect(index) {
             this.$router.push({ path: "/" + index.toLowerCase() });
+            if (this.closeDrawer) {
+                this.closeDrawer();
+            }
         },
     },
 };

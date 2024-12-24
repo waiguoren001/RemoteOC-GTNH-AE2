@@ -70,9 +70,9 @@
                                                 </el-skeleton>
                                             </template>
                                             <template #error>
-                                                <el-icon>
-                                                    <QuestionFilled />
-                                                </el-icon>
+                                                <el-icon size="40" class="unknow-icon">
+                                        <QuestionFilled />
+                                    </el-icon>
                                             </template>
                                         </el-image>
                                         <div class="item-info">
@@ -483,6 +483,15 @@ export default {
     display: flex;
     /* align-items: center; */
     height: calc(100% - 32px);
+}
+
+.unknow-icon {
+    /* 居中 */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
 }
 
 .item-card {
