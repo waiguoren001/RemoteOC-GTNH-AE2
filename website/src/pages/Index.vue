@@ -16,16 +16,28 @@
                 <el-text size="large">当前版本 <el-tag size="large">GTNH 2.6.0</el-tag></el-text>
                 <a href="https://github.com/z5882852/RemoteOC-GTNH-AE2" target="_blank"><el-button size="large" round>GitHub</el-button></a>
             </el-space>
-
+        </div>
+        <div v-if="isMobile" style="text-align: center; margin-top: 5%;">
+            <el-space direction="vertical" style="gap: 24px 0px">
+                <el-text>使用PC端以获得更好的体验</el-text>
+            </el-space>
         </div>
     </div>
 </template>
 
 <script>
+import { inject } from 'vue';
+
 export default {
     name: 'Index',
     data() {
         return {
+        };
+    },
+    setup() {
+        const isMobile = inject('isMobile');
+        return {
+            isMobile,
         };
     },
     methods: {

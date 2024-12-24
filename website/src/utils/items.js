@@ -22,7 +22,8 @@ const itemUtil = {
 
     loadItems(progressCallback) {
         if (!this.items) {
-            axios.get("/items.json", {
+            let url = (localStorage.getItem("cdnPath") || "") + "/items.json";
+            axios.get(url, {
                 onDownloadProgress: (event) => {
                     if (event.lengthComputable) {
                         const percentCompleted = Math.round((event.loaded / event.total) * 100);
@@ -49,7 +50,8 @@ const itemUtil = {
 
     loadFluids(progressCallback) {
         if (!this.fluids) {
-            axios.get("/fluids.json", {
+            let url = (localStorage.getItem("cdnPath") || "") + "/fluids.json";
+            axios.get(url, {
                 onDownloadProgress: (event) => {
                     if (event.lengthComputable) {
                         const percentCompleted = Math.round((event.loaded / event.total) * 100);

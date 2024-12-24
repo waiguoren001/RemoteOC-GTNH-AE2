@@ -42,6 +42,7 @@ export default {
             { name: '下单后刷新CPU', field: 'refreshCPU', type: 'checkbox', tooltip: '选择此选项后，在下单结束会同时返回CPU信息<br/>当需要频繁下单或CPU信息量较大时谨慎选择！', defaultValue: false },
             { name: '服务端地址', field: 'backendUrl', type: 'input', placeholder: 'Backend URL', defaultValue: '' },
             { name: '服务端令牌', field: 'token', type: 'password', placeholder: 'Token', defaultValue: '' },
+            { name: '数据文件URL', field: 'cdnPath', type: 'input', placeholder: '数据文件的URL地址目录，用于加速物品和流体数据加载', defaultValue: '' },
         ];
 
         // 初始化配置值

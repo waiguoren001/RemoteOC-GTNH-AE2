@@ -137,6 +137,7 @@ export default {
     },
     methods: {
         handleCpuSelect(index) {
+            console.log("CPU selected:", index, this.cpuList[index]);
             this.currentCpu = this.cpuList[index];
         },
         getItemCardClass(item) {
@@ -247,11 +248,9 @@ export default {
 
                     let cpus = result.data;
                     let cpuList = [];
-                    let i = 0;
                     for (let cpu of cpus) {
                         let name = cpu.name !== "" ? cpu.name : `CPU #${cpuList.length + 1}`;
                         cpuList.push({
-                            id: i,
                             name: name,
                             busy: cpu.busy,
                             coprocessors: cpu.coprocessors,
@@ -263,7 +262,6 @@ export default {
                             this.currentCpu = cpuList[cpuList.length - 1];
                             this.cpuSelected = cpuList.length - 1;
                         }
-                        i++;
                     }
 
                     // 当选择的CPU不存在默认选择第一个CPU
@@ -274,6 +272,10 @@ export default {
 
                     // cpuList按名字排序
                     cpuList.sort((a, b) => a.name.localeCompare(b.name));
+                    // 给每个CPU添加id，递增
+                    cpuList.forEach((cpu, index) => {
+                        cpu.id = index;
+                    });
                     this.cpuList = cpuList;
                 } catch (e) {
                     console.error(e, data);

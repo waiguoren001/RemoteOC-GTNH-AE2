@@ -13,6 +13,11 @@ const routes = [
     component: Index,
   },
   {
+    path: '/index',
+    name: 'Index',
+    component: Index,
+  },
+  {
     path: '/monitor',
     name: 'Monitor',
     component: Monitor,

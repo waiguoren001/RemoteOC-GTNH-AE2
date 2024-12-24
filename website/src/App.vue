@@ -46,7 +46,7 @@
             </el-main>
         </el-container>
     </el-container>
-    <el-progress v-if="itemProgress + fluidsProgress < 100" :percentage="itemProgress + fluidsProgress"
+    <el-progress v-if="showProgress" :percentage="itemProgress + fluidsProgress"
         :status="progressStatus" striped striped-flow :stroke-width="15" :text-inside="true"
         style="position: fixed; top: calc(50% + 100px); left: 50%; transform: translateX(-50%); width: 20%; z-index: 9999;" />
 </template>
@@ -78,6 +78,7 @@ export default {
             progressStatus: "",
             isDataLoaded: false,
             drawerVisible: false,
+            showProgress: false,
         };
     },
     created() {
@@ -105,6 +106,7 @@ export default {
 
             let itemsLoaded = false;
             let fluidsLoaded = false;
+            this.showProgress = true;
 
             // 加载 items 数据
             itemUtil.loadItems((percent) => {
@@ -115,6 +117,7 @@ export default {
                     if (itemsLoaded && fluidsLoaded) {
                         this.loadingInstance.close();
                         this.isDataLoaded = true;
+                        this.showProgress = false;
                     }
                 } else if (percent === -1) {
                     ElMessage.error("加载 items 数据失败！");
@@ -131,6 +134,7 @@ export default {
                     if (itemsLoaded && fluidsLoaded) {
                         this.loadingInstance.close();
                         this.isDataLoaded = true;
+                        this.showProgress = false;
                     }
                 } else if (percent === -1) {
                     ElMessage.error("加载 fluids 数据失败！");
