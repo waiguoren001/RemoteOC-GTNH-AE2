@@ -1,6 +1,20 @@
 local component = require("component")
 local base64 = require("lib/base64")
-local me = component.me_controller
+local env = require("env")
+
+local aeAddress = env.aeAddress
+
+local me
+
+if component.proxy(aeAddress) then
+    me = component.proxy(aeAddress)
+elseif component.isAvailable("me_controller") then
+    me = component.me_controller
+elseif component.isAvailable("me_interface") then
+    me = component.me_interface
+else
+    error("未找到 AE 网络")
+end
 
 ae = {}
 

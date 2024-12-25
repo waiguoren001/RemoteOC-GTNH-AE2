@@ -1,12 +1,21 @@
 local shell = require('shell')
-local repo = "https://raw.githubusercontent.com/z5882852/RemoteOC/main/client/"
+local repo
+
+local args = {...}
+if #args >= 1 then
+    repo = args[1]
+else
+    repo = "https://raw.githubusercontent.com/z5882852/RemoteOC-GTNH-AE2/main/client/"
+end
+
 local scripts = {
     'run.lua',
     'env.lua',
     'lib/logger.lua',
     'lib/json.lua',
+    'lib/base64.lua',
     'src/executor.lua',
-    'plugins/echo.lua',
+    'plugins/ae.lua',
 }
 
 print("installing...")
