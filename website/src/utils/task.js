@@ -11,7 +11,7 @@ const fetchStatus = async (task_id, handleResult, handleUploading, handleComplet
             ElMessage.error(`请先设置后端地址！`)
             return
         }
-        const response = await Requests.get('/api/cmd/status', { task_id, remove: false, use_gzip: Setting.get('useTaskGzip') });
+        const response = await Requests.get('/api/task/status', { task_id, remove: false, use_gzip: Setting.get('useTaskGzip') });
         const data = response.data;
         if (data.code === 200) {
             if (data.data.result && data.data.status !== 'uploading') {
@@ -64,7 +64,7 @@ const addTask = async (task_id, client_id, handleResult) => {
             ElMessage.error(`提交任务失败: task_id: ${task_id}`);
             return
         }
-        const response = await Requests.post('/api/cmd/task', {
+        const response = await Requests.post('/api/task/task', {
             task_id: task_id,
             client_id: client_id,
         });
@@ -84,7 +84,7 @@ const addTask = async (task_id, client_id, handleResult) => {
 
 const addCommands = async (task_id, client_id, commands, handleResult) => {
     try {
-        const response = await Requests.post('/api/cmd/add', {
+        const response = await Requests.post('/api/task/add', {
             task_id: task_id,
             client_id: client_id,
             commands: commands,

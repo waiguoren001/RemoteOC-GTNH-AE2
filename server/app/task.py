@@ -2,6 +2,7 @@ from config import timer_task_config, task_config, SERVER_TOKEN
 from utils import *
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request
 from models import *
+import re
 import uuid
 import gzip
 import base64
@@ -156,6 +157,9 @@ async def add_command(data: AddCommandModel):
     task_id = data.task_id or str(uuid.uuid4())
     new_commands = data.commands
     client_id = data.client_id
+
+    if not re.match(r"^[a-zA-Z0-9_-]+$", task_id):
+        return {"code": 400, "message": "Invalid taskId format", "data": None}
 
     if not new_commands or not isinstance(new_commands, list) or len(new_commands) == 0:
         return {"code": 400, "message": "No commands provided or invalid format", "data": None}

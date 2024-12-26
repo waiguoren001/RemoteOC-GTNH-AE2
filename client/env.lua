@@ -15,16 +15,16 @@ local env = {
     aeAddress = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 
     -- 分块上报时每块的大小
-    chunkSize = 128,
+    chunkSize = 256,
 
     -- 获取命令的接口
-    getPath = "/api/cmd/get",
+    getPath = "/api/task/get",
 
     -- 上报接口
-    reportPath = "/api/cmd/report",
+    reportPath = "/api/task/report",
 
     -- 分块上报接口
-    chunkedReportPath = "/api/cmd/chunked_report",
+    chunkedReportPath = "/api/task/chunked_report",
 }
 
 return env
