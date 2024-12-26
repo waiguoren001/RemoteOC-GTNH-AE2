@@ -258,11 +258,6 @@ export default {
                             output: cpu.cpu && cpu.cpu.finalOutput ? this.parseOutputItem(cpu.cpu.finalOutput) : {},
                             items: this.parseItemStack(cpu.cpu),
                         });
-                        if (previousCpuName && previousCpuName === name) {
-                            this.currentCpu = cpuList[cpuList.length - 1];
-                            this.cpuSelected = cpuList.length - 1;
-                            this.selectCpu = cpuList.length - 1;
-                        }
                     }
 
                     // cpuList按名字排序
@@ -270,6 +265,12 @@ export default {
                     // 给每个CPU添加id，递增
                     cpuList.forEach((cpu, index) => {
                         cpu.id = index;
+                        // 还原选择的CPU
+                        if (previousCpuName && previousCpuName === cpu.name) {
+                            this.currentCpu = cpu;
+                            this.cpuSelected = index;
+                            this.selectCpu = index;
+                        }
                     });
 
                     // 当选择的CPU不存在默认选择第一个CPU
