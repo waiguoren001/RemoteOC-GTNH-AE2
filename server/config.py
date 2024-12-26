@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from callback import *
-
+from action import *
 
 # 加载 .env 文件中的环境变量
 load_dotenv()
@@ -93,5 +93,96 @@ task_config = {
 }
 
 
+# 触发器设置
+trigger_config = {
+    "CPU空闲时": {
+        "interval": 180,  # 任务执行间隔
+        "description": "当 CPU 空闲时，执行任务",
+        "task": {
+            # 用占位符{xxx}表示参数，用于动态替换
+            "task_id": None,  # 任务 ID, None 则自动生成
+            "client_id": "{client_id}",
+            "commands": [
+                "return ae.getCpuInfoByName('{cpu_name}')",
+            ],
+            "callback": check_cpu_free,
+        },
+        "args": [
+            {
+                "key": "client_id",
+                "field": "client_id",
+                "type": "str",
+            },
+            {
+                "key": "cpu_name",
+                "field": "cpu_name",
+                "type": "str",
+            },
+        ],
+        # 可选操作列表
+        "actions": {
+            "craft": {
+                "name": "合成物品",
+                "description": None,
+                "function": craft_item,
+                "args": [
+                    {
+                        "field": "client_id",
+                        "type": "str",
+                    },
+                    {
+                        "field": "name",
+                        "type": "str",
+                    },
+                    {
+                        "field": "damage",
+                        "type": "int",
+                    },
+                    {
+                        "field": "amount",
+                        "type": "int",
+                        "default": 1,
+                    },
+                    {
+                        "field": "cpu_name",
+                        "type": "str",
+                        "default": None,
+                    },
+                    {
+                        "field": "label",
+                        "type": "str",
+                        "default": None,
+                    },
+                ],
+            },
+            "notify": {
+                "name": "发送通知",
+                "description": "发送HTTP请求推送API，通知用户",
+                "function": send_notification,
+                "args": [
+                    {
+                        "field": "method",
+                        "type": "str",
+                        "default": "GET",
+                    },
+                    {
+                        "field": "url",
+                        "type": "str",
+                    },
+                    {
+                        "field": "params",
+                        "type": "dict",
+                        "default": None,
+                    },
+                    {
+                        "field": "data",
+                        "type": "dict",
+                        "default": None,
+                    },
+                ],
+            },
+        },
+    },
+}
 
 SERVER_TOKEN = os.getenv('SERVER_TOKEN')
