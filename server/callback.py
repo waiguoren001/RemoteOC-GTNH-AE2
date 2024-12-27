@@ -22,6 +22,6 @@ def parse_data(result: list):
 
 
 def check_cpu_free(result: list):
-    cpu_status = json.loads(result[0])
+    cpu_status = json.loads(result[0]).get("data", {})
     return cpu_status.get("busy") == False
     

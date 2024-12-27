@@ -1,8 +1,10 @@
 import uvicorn
 import argparse
 from app import app
-from scheduler import start_scheduler, stop_scheduler
-from utils import LOG_LEVEL, task_manager, COMPLETED, logger
+from utils.scheduler import start_scheduler, stop_scheduler
+from utils.utils import LOG_LEVEL, COMPLETED, logger
+from utils.task import task_manager
+from utils.trigger import trigger_manager
 from config import task_config
 
 
@@ -50,3 +52,6 @@ if __name__ == "__main__":
     finally:
         # 停止调度器
         stop_scheduler()
+        # 停止触发器
+        trigger_manager.stop_all()
+

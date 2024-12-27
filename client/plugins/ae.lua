@@ -1,5 +1,5 @@
 local component = require("component")
-local base64 = require("lib/base64")
+local base64 = require("lib.base64")
 local env = require("env")
 
 local aeAddress = env.aeAddress
@@ -88,7 +88,7 @@ local function getDetailInfo(cpu)
     return result
 end
 
-local function getCpuInfoByName(cpuName)
+function ae.getCpuInfoByName(cpuName)
     if not cpuName or cpuName == "" then
         return { message = "CPU 名称为空" }
     end
@@ -172,7 +172,7 @@ function ae.requestItem(name, damage, amount, cpuName, label)
         result = craftable.request(amount, true)
     else
         -- 检查CPU是否存在并且为空闲状态
-        local cpuInfo = getCpuInfoByName(cpuName)
+        local cpuInfo = ae.getCpuInfoByName(cpuName)
         if cpuInfo.message == "success" then
             if cpuInfo.data.busy then
                 return { message = "CPU 正忙" }

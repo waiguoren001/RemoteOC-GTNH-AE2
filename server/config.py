@@ -24,72 +24,69 @@ timer_task_config = {
 # 任务组设置，该任务执行结束后会调用callback，该任务记录不会被清除
 task_config = {
     "getCpuDetailList": {  # 获取CPU详细信息列表
-        'client_id': 'client_01',  # 指定执行命令的OC客户端id
-        'commands': [  # 远程执行的命令列表
+        "client_id": "client_01",  # 指定执行命令的OC客户端id
+        "commands": [  # 远程执行的命令列表
             "return ae.getCpuList(true)",
         ],
-        'cache': True,
-        'handle': None,
-        'callback': None,
+        "cache": True,
+        "handle": None,
+        "callback": None,
     },
     "getCpuList": {  # 获取CPU简易信息列表
-        'client_id': 'client_01',
-        'commands': [
+        "client_id": "client_01",
+        "commands": [
             "return ae.getCpuList()",
         ],
-        'cache': True,
-        'handle': None,
-        'callback': None,
+        "cache": True,
+        "handle": None,
+        "callback": None,
     },
     "getAllItems": {  # 获取AE网络里所有物品信息
-        'client_id': 'client_01',
-        'commands': [
+        "client_id": "client_01",
+        "commands": [
             "return ae.getAllItems()",
         ],
-        'cache': True,
-        'handle': None,
-        'callback': None,
-        'chunked': True,  # 由于数据量过大，启用分块上传。
+        "cache": True,
+        "handle": None,
+        "callback": None,
+        "chunked": True,  # 由于数据量过大，启用分块上传。
     },
     "getAllSilempleItems": {  # 获取AE网络里所有物品信息
-        'client_id': 'client_01',
-        'commands': [
+        "client_id": "client_01",
+        "commands": [
             "return ae.getAllSilempleItems()",
         ],
-        'cache': True,
-        'handle': None,
-        'callback': None,
+        "cache": True,
+        "handle": None,
+        "callback": None,
     },
     "getAllCraftables": {  # 获取AE网络里所有可合成的物品信息
-        'client_id': 'client_01',
-        'commands': [
+        "client_id": "client_01",
+        "commands": [
             "return ae.getAllCraftables()",
         ],
-        'cache': True,
-        'handle': None,
-        'callback': None,
+        "cache": True,
+        "handle": None,
+        "callback": None,
     },
     "getAllCraftablesAndCpus": {  # 获取AE网络里所有可合成的物品信息和CPU信息
-        'client_id': 'client_01',
-        'commands': [
-            "return ae.getAllCraftables()",
-            "return ae.getCpuList()"
-        ],
-        'cache': True,
-        'handle': None,
-        'callback': None,
+        "client_id": "client_01",
+        "commands": ["return ae.getAllCraftables()", "return ae.getCpuList()"],
+        "cache": True,
+        "handle": None,
+        "callback": None,
     },
     "monitor": {
-        'client_id': 'client_01',
-        'commands': [
+        "client_id": "client_01",
+        "commands": [
             "return getCapacitorInfo()",  # 获取兰波顿电容库数据
             "return calculate_fluid_me_totals()",  # 获取流体存储元件数据
             "return calculate_item_me_totals()",  # 获取物品存储元件数据
         ],
-        'cache': True,
-        'handle': parse_data,
-        'callback': None,
-    }
+        "cache": True,
+        "handle": parse_data,
+        "callback": None,
+    },
 }
 
 
@@ -105,9 +102,10 @@ trigger_config = {
             "commands": [
                 "return ae.getCpuInfoByName('{cpu_name}')",
             ],
-            "callback": check_cpu_free,
+            "handle": check_cpu_free,  # 返回值为 True 时执行任务
         },
         "args": [
+            # tpye: str, int, float, bool
             {
                 "key": "client_id",
                 "field": "client_id",
@@ -131,15 +129,15 @@ trigger_config = {
                         "type": "str",
                     },
                     {
-                        "field": "name",
+                        "field": "item_name",
                         "type": "str",
                     },
                     {
-                        "field": "damage",
+                        "field": "item_damage",
                         "type": "int",
                     },
                     {
-                        "field": "amount",
+                        "field": "item_amount",
                         "type": "int",
                         "default": 1,
                     },
@@ -170,6 +168,10 @@ trigger_config = {
                         "type": "str",
                     },
                     {
+                        "field": "url",
+                        "type": "str",
+                    },
+                    {
                         "field": "params",
                         "type": "dict",
                         "default": None,
@@ -185,4 +187,4 @@ trigger_config = {
     },
 }
 
-SERVER_TOKEN = os.getenv('SERVER_TOKEN')
+SERVER_TOKEN = os.getenv("SERVER_TOKEN")

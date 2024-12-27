@@ -1,5 +1,6 @@
 import threading
-from utils import task_manager, READY
+from utils.utils import READY
+from utils.trigger import task_manager
 from config import timer_task_config
 
 timers = {}

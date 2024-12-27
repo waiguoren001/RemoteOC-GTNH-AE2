@@ -1,7 +1,10 @@
 from config import timer_task_config, task_config, SERVER_TOKEN
-from utils import *
+from utils.utils import *
+from utils.trigger import trigger_manager
+from utils.task import task_manager
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request
 from models import *
+import json
 import re
 import uuid
 import gzip
@@ -138,7 +141,7 @@ async def receive_report(request: Request):
     if not task_manager.task_exists(task_id):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    for config in [timer_task_config, task_config]:
+    for config in [timer_task_config, task_config, trigger_manager.get_tasks()]:
         if task_id in config:
             handle = config.get(task_id, {}).get("handle")
             if handle:

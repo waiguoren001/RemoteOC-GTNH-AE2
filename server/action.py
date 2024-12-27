@@ -1,6 +1,7 @@
 import uuid
 import requests
-from utils import task_manager, READY
+from utils.utils import READY
+from utils.task import task_manager
 
 
 def craft_item(client_id, item_name, item_damage, item_amount=1, cpu_name=None, label=None):
@@ -32,13 +33,14 @@ def craft_item(client_id, item_name, item_damage, item_amount=1, cpu_name=None, 
     return task_id
 
 
-def send_notification(method: str, url: str, params=None, data=None):
+def send_notification(method: str, url: str, headers=None, params=None, data=None):
     """
     发送通知
 
     通过请求url发送通知
     :param method: 请求方法
     :param url: 请求地址
+    :param headers: 请求头
     :param params: 请求参数
     :param data: 请求数据
     """
@@ -46,6 +48,11 @@ def send_notification(method: str, url: str, params=None, data=None):
         params = {}
     if not data:
         data = {}
-    res = requests.request(method, url, params=params, data=data)
-    return res.text
+    if not headers:
+        headers = {}
+    try:
+        res = requests.request(method, url, headers=headers, params=params, json=data, timeout=5)
+        return res.text
+    except Exception as e:
+        return str(e)
     
