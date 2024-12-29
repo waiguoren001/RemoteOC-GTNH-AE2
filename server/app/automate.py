@@ -36,9 +36,9 @@ async def add_trigger(trigger: AddTriggerModel):
 
 
 @router.post("/trigger/remove", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
-async def remove_trigger(trigger_task_id: str = Query(..., description="触发器任务ID")):
+async def remove_trigger(trigger: TriggerRequestModel):
     """移除触发器"""
-    trigger_manager.unregister_trigger(trigger_task_id)
+    trigger_manager.unregister_trigger(trigger.trigger_task_id)
     return {"code": 200, "message": "success"}
 
 
@@ -54,14 +54,14 @@ async def get_trigger_list():
 
 
 @router.post("/trigger/start", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
-async def start_trigger(trigger_task_id: str = Query(..., description="触发器任务ID")):
+async def start_trigger(trigger: TriggerRequestModel):
     """启动触发器"""
-    trigger_manager.start(trigger_task_id)
+    trigger_manager.start(trigger.trigger_task_id)
     return {"code": 200, "message": "success"}
 
 
 @router.post("/trigger/stop", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
-async def stop_trigger(trigger_task_id: str = Query(..., description="触发器任务ID")):
+async def stop_trigger(trigger: TriggerRequestModel):
     """停止触发器"""
-    trigger_manager.stop(trigger_task_id)
+    trigger_manager.stop(trigger.trigger_task_id)
     return {"code": 200, "message": "success"}

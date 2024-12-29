@@ -46,3 +46,7 @@ class AddTriggerModel(BaseModel):
     trigger_kwargs: dict = Field(..., description="触发器的参数")
     action_kwargs: dict = Field(..., description="操作的参数")
     interval: Optional[int] = Field(None, description="触发器的间隔时间")
+
+# 定义触发器请求模型，用于触发器的查询和删除
+class TriggerRequestModel(BaseModel):
+    trigger_task_id: str = Field(..., description="触发器任务 ID")

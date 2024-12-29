@@ -4,6 +4,7 @@ import Monitor from '../pages/Monitor.vue';
 import Items from '../pages/Items.vue';
 import Cpus from '../pages/Cpus.vue';
 import Tasks from '../pages/Tasks.vue';
+import Automate from '../pages/Automate.vue';
 import Settings from '../pages/Settings.vue';
 
 const routes = [
@@ -36,6 +37,11 @@ const routes = [
     path: '/tasks',
     name: 'Tasks',
     component: Tasks,
+  },
+  {
+    path: '/automate',
+    name: 'Automate',
+    component: Automate,
   },
   {
     path: '/settings',

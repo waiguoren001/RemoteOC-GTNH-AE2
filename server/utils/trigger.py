@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import threading
 import uuid
+import copy
 from fastapi import HTTPException
 from .utils import logger, READY, PENDING, COMPLETED
 from .task import TaskManager, task_manager
@@ -209,10 +210,13 @@ class TriggerManager:
         if trigger_name not in trigger_config:
             logger.error(f"Trigger '{trigger_name}' not found.")
             raise HTTPException(status_code=404, detail=f"Trigger '{trigger_name}' not found.")
-        config = trigger_config[trigger_name].copy()
+        config = copy.deepcopy(trigger_config[trigger_name])
         if action_name not in config.get('actions', {}):
             logger.error(f"Action '{action_name}' not found.")
             raise HTTPException(status_code=404, detail=f"Action '{action_name}' not found.")
+        
+        # 触发器名称
+        config['name'] = trigger_name
         
         # 检测时间
         if interval is not None:
@@ -223,12 +227,15 @@ class TriggerManager:
         del config['actions']
 
         # 替换task占位符
-        task_config = config['task'].copy()
+        task_config = copy.deepcopy(config['task'])
         task_config = self.replace_placeholders(task_config, trigger_kwargs)
         config['task'] = task_config
 
+        # 将触发器参数传入
+        config['kwargs'] = copy.deepcopy(trigger_kwargs)
+
         # 将操作参数传入
-        config['action']['action_kwargs'] = action_kwargs
+        config['action']['action_kwargs'] = copy.deepcopy(action_kwargs)
 
         # 生命周期
         config['time'] = {
@@ -245,6 +252,7 @@ class TriggerManager:
         config['running'] = False
         config['timer'] = None
         self.triggers[trigger_task_id] = config
+        logger.debug(f"Trigger '{trigger_task_id}' registered.")
         return trigger_task_id
 
     def unregister_trigger(self, trigger_task_id):
@@ -253,10 +261,9 @@ class TriggerManager:
         :param trigger_task_id: 触发器ID。
         """
         if trigger_task_id in self.triggers:
-            self.stop(trigger_task_id)
+            self.stop(trigger_task_id, force=True)
             del self.triggers[trigger_task_id]
         
-
     def _execute_task(self, task_config):
         """
         执行任务。
@@ -325,7 +332,6 @@ class TriggerManager:
             config['result'] = {"success": False, "error": str(e)}
             self.stop(trigger_task_id)
 
-
     def start(self, trigger_task_id):
         """
         启动触发器。
@@ -348,17 +354,18 @@ class TriggerManager:
         trigger_config['time']['last_start'] = datetime.now().isoformat()
         logger.debug(f"Trigger '{trigger_task_id}' started.")
 
-    def stop(self, trigger_task_id):
+    def stop(self, trigger_task_id, force=False):
         """
         停止触发器。
         :param trigger_task_id: 触发器ID。
+        :param force: 是否强制停止。
         """
         if trigger_task_id not in self.triggers:
             logger.error(f"Trigger '{trigger_task_id}' not found.")
             raise HTTPException(status_code=404, detail=f"Trigger '{trigger_task_id}' not found.")
 
         trigger_config = self.triggers[trigger_task_id]
-        if not trigger_config['running']:
+        if not trigger_config['running'] and not force:
             logger.error(f"Trigger '{trigger_task_id}' is not running.")
             raise HTTPException(status_code=400, detail=f"Trigger '{trigger_task_id}' is not running.")
 
