@@ -50,3 +50,14 @@ class AddTriggerModel(BaseModel):
 # 定义触发器请求模型，用于触发器的查询和删除
 class TriggerRequestModel(BaseModel):
     trigger_task_id: str = Field(..., description="触发器任务 ID")
+
+# 定义定时器添加请求模型
+class AddTimerModel(BaseModel):
+    name: str = Field(..., description="定时器的名称")
+    action: str = Field(..., description="定时器的操作名称")
+    trigger_kwargs: dict = Field(..., description="定时器的参数")
+    action_kwargs: dict = Field(..., description="操作的参数")
+
+# 定义定时器请求模型，用于定时器的查询和删除
+class TimerRequestModel(BaseModel):
+    timer_id: str = Field(..., description="定时器 ID")

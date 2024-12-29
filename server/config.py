@@ -203,4 +203,117 @@ trigger_config = {
     },
 }
 
+
+# 自动化流程定时任务设置
+timer_config = {
+    "延迟任务": {
+        "description": "在一段时间后执行任务",
+        "args": [
+            {
+                "key": "delay",
+                "field": "delay",
+                "type": "int",
+                "description": "延迟时间(秒)",
+            },
+        ],
+        "actions": {
+            "craft": {
+                "name": "合成物品",
+                "description": "向OC客户端发送合成物品请求",
+                "function": craft_item,
+                "args": [
+                    {
+                        "field": "client_id",
+                        "type": "str",
+                        "default": "",
+                        "description": "客户端 ID",
+                    },
+                    {
+                        "field": "item_name",
+                        "type": "str",
+                        "description": "name",
+                    },
+                    {
+                        "field": "item_damage",
+                        "type": "int",
+                        "description": "damage",
+                    },
+                    {
+                        "field": "item_amount",
+                        "type": "int",
+                        "default": 1,
+                        "description": "数量",
+                    },
+                    {
+                        "field": "cpu_name",
+                        "type": "str",
+                        "default": None,
+                        "description": "指定合成的CPU",
+                    },
+                    {
+                        "field": "label",
+                        "type": "str",
+                        "default": None,
+                        "description": "label",
+                    },
+                ],
+            },
+        },
+    },
+    "定时任务": {
+        "description": "在指定时间执行任务",
+        "args": [
+            {
+                "key": "time",
+                "field": "time",
+                "type": "str",
+                "description": "执行时间",
+            },
+        ],
+        "actions": {
+            "craft": {
+                "name": "合成物品",
+                "description": "向OC客户端发送合成物品请求",
+                "function": craft_item,
+                "args": [
+                    {
+                        "field": "client_id",
+                        "type": "str",
+                        "default": "",
+                        "description": "客户端 ID",
+                    },
+                    {
+                        "field": "item_name",
+                        "type": "str",
+                        "description": "name",
+                    },
+                    {
+                        "field": "item_damage",
+                        "type": "int",
+                        "description": "damage",
+                    },
+                    {
+                        "field": "item_amount",
+                        "type": "int",
+                        "default": 1,
+                        "description": "数量",
+                    },
+                    {
+                        "field": "cpu_name",
+                        "type": "str",
+                        "default": None,
+                        "description": "指定合成的CPU",
+                    },
+                    {
+                        "field": "label",
+                        "type": "str",
+                        "default": None,
+                        "description": "label",
+                    },
+                ],
+            },
+        },
+    },
+}
+
 SERVER_TOKEN = os.getenv("SERVER_TOKEN")

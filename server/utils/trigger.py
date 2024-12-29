@@ -111,16 +111,17 @@ class TriggerManager:
         获取触发器配置列表。
         """
         config_list = []
-        for trigger_name, trigger in trigger_config.items():
+        for timer_name, trigger in trigger_config.items():
             config = {
-                "name": trigger_name,
+                "name": timer_name,
                 "description": trigger.get("description"),
                 "args": trigger.get("args", []),
                 "actions": []
             }
-            for action_name, action in trigger.get("actions", {}).items():
+            for action_id, action in trigger.get("actions", {}).items():
                 config["actions"].append({
-                    "name": action_name,
+                    "id": action_id,
+                    "name": action.get("name"),
                     "description": action.get("description"),
                     "args": action.get("args", []),
                 })
