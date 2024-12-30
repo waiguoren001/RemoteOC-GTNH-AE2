@@ -94,7 +94,7 @@ task_config = {
 trigger_config = {
     "CPU空闲时": {
         "interval": 180,  # 任务执行间隔
-        "description": "当 CPU 空闲时，执行任务",
+        "description": "当CPU空闲时执行任务",
         "task": {
             # 用占位符{xxx}表示参数，用于动态替换
             "task_id": None,  # 任务 ID, None 则自动生成

@@ -142,9 +142,10 @@ class TimerManager:
                 "args": trigger.get("args", []),
                 "actions": []
             }
-            for action_name, action in trigger.get("actions", {}).items():
+            for action_id, action in trigger.get("actions", {}).items():
                 config["actions"].append({
-                    "name": action_name,
+                    "id": action_id,
+                    "name": action.get("name"),
                     "description": action.get("description"),
                     "args": action.get("args", []),
                 })
@@ -226,7 +227,7 @@ class TimerManager:
             current_time = datetime.now()
             run_date = current_time + timedelta(seconds=timer_kwargs["delay"])
         elif timer_name == "定时任务":
-            run_date = timer_kwargs["time"]
+            run_date = datetime.fromisoformat(timer_kwargs["time"])
         else:
             raise HTTPException(status_code=400, detail="不支持的触发类型")
         
@@ -281,7 +282,10 @@ class TimerManager:
         注销指定的定时任务
         :param timer_id: 任务ID
         """
-
+        if timer_id not in self.timer:
+            logger.error(f"Timer '{timer_id}' not found.")
+            raise HTTPException(status_code=404, detail=f"Timer '{timer_id}' not found.")
+        del self.timer[timer_id]
         job = self.scheduler.get_job(timer_id)
         if job:
             self.scheduler.remove_job(timer_id)

@@ -58,6 +58,38 @@ const fetchStatus = async (task_id, handleResult, handleUploading, handleComplet
     }
 };
 
+// 获取任务状态，不轮询
+const fetchStatusOnce = async (task_id, handleResult) => {
+    try {
+        if (!Setting.get('backendUrl') || Setting.get('backendUrl') === '') {
+            ElMessage.error(`请先设置后端地址！`)
+            return
+        }
+        const response = await Requests.get('/api/task/status', { task_id, remove: false, use_gzip: Setting.get('useTaskGzip') });
+        const data = response.data;
+        if (data.code === 200) {
+            if (data.data.result && data.data.gzip) {
+                // 解压缩
+                let binaryString = atob(data.data.result);
+                let binaryData = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    binaryData[i] = binaryString.charCodeAt(i);
+                }
+                let result = pako.inflate(binaryData, { to: 'string' });
+                data.data.result = JSON.parse(result);
+            }
+            if (handleResult) handleResult(data.data);
+        } else {
+            ElMessage.error(`查询任务失败: ${data.code}, ${data.message ? data.message : data}`);
+            console.error(data);
+        }
+    }
+    catch (error) {
+        ElMessage.error(`查询任务失败: ${error}`);
+        console.error(`Error fetching task status: ${error}`);
+    }
+}
+
 const addTask = async (task_id, client_id, handleResult) => {
     try {
         if (!task_id) {
@@ -247,6 +279,7 @@ const createCraftTask = (itemName, ItemDamage, amount = 1, cpuName, label, callb
 
 export {
     fetchStatus,
+    fetchStatusOnce,
     addTask,
     createPollingController,
     localTask,
