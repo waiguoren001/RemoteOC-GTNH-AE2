@@ -6,7 +6,7 @@
                     <span>最近更新时间: {{ lastUpdate }}</span>
                     <div style="text-align: right;">
                         <el-button type="primary" :size="isMobile ? 'small' : ''"
-                            @click="addAutoTask">添加自动化任务</el-button>
+                            @click="showAutoTaskDialog">添加自动化任务</el-button>
                         <el-button type="primary" :size="isMobile ? 'small' : ''"
                             @click="loadAutoTasks">刷新任务列表</el-button>
                     </div>
@@ -119,7 +119,6 @@
                             </template>
                         </el-select-v2>
                     </el-form-item>
-
                     <template v-if="form.name === 'CPU空闲时'">
                         <el-form-item label="监听CPU">
                             <CpuSelect status="busy" footer="仅能选择已命名且繁忙的CPU" :options="options.cpuList"
@@ -130,10 +129,18 @@
                                 <el-input v-model="form.trigger_kwargs.client_id" placeholder="请输入客户端ID" />
                             </el-tooltip>
                         </el-form-item>
+                        <el-form-item label="检测间隔">
+                            <el-input-number v-model="form.interval" placeholder="检测间隔" :min="1" :max="3600">
+                                <template #suffix>
+                                    秒
+                                </template>
+                            </el-input-number>
+                        </el-form-item>
                     </template>
                     <template v-if="form.name === '延迟任务'">
                         <el-form-item label="延迟时间">
-                            <el-input-number v-model="form.trigger_kwargs.delay" placeholder="延迟" :min="60" :max="604800">
+                            <el-input-number v-model="form.trigger_kwargs.delay" placeholder="延迟" :min="60"
+                                :max="604800">
                                 <template #suffix>
                                     秒
                                 </template>
@@ -150,23 +157,63 @@
                     <!-- action -->
                     <template v-if="form.name">
                         <el-form-item label="执行操作">
-                            <el-select-v2 v-model="form.action" placeholder="请选择执行操作" :options="options.actions">
-                            <template #default="{ item }">
-                                <div
-                                    style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                    <span style="flex: 0 0 80px; text-align: left; margin-right: 8px;">
-                                        {{ item.label }}
-                                    </span>
-                                    <span style="flex: 1; color: var(--el-text-color-secondary); font-size: 13px;">
-                                        {{ item.desc }}
-                                    </span>
-                                </div>
-                            </template>
-                        </el-select-v2>
+                            <el-select-v2 v-model="form.action" placeholder="请选择执行操作" :options="options.actions" @change="onActionSelected">
+                                <template #default="{ item }">
+                                    <div
+                                        style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                        <span style="flex: 0 0 80px; text-align: left; margin-right: 8px;">
+                                            {{ item.label }}
+                                        </span>
+                                        <span style="flex: 1; color: var(--el-text-color-secondary); font-size: 13px;">
+                                            {{ item.desc }}
+                                        </span>
+                                    </div>
+                                </template>
+                            </el-select-v2>
                         </el-form-item>
+                        <template v-if="form.action">
+                            <template v-if="form.action === 'craft'">
+                                <el-form-item label="目标物品">
+                                    <ItemSelect :options="options.itemList" :craf="true"
+                                        @handleLoadItemList="onLoadedItemList"
+                                        @handleItemSelected="onActionItemSelected" />
+                                </el-form-item>
+
+                                <el-form-item label="合成数量">
+                                    <el-input-number v-model="form.action_kwargs.item_amount" placeholder="合成数量"
+                                        :min="1">
+                                        <template #suffix>
+                                            个
+                                        </template>
+                                    </el-input-number>
+                                </el-form-item>
+                            </template>
+                            <template v-if="form.action === 'notify'">
+                                <el-form-item label="请求方法">
+                                    <el-select v-model="form.action_kwargs.method" placeholder="请选择请求方法">
+                                        <el-option label="GET" value="GET" />
+                                        <el-option label="POST" value="POST" />
+                                        <el-option label="PUT" value="PUT" />
+                                        <el-option label="DELETE" value="DELETE" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="请求地址">
+                                    <el-input v-model="form.action_kwargs.url" placeholder="请输入请求地址" />
+                                </el-form-item>
+                                <el-form-item label="请求头">
+                                    <el-input v-model="options.action_kwargs.headers" placeholder="请输入请求头" />
+                                </el-form-item>
+                                <el-form-item label="请求参数">
+                                    <el-input v-model="options.action_kwargs.params" placeholder="请输入请求参数" />
+                                </el-form-item>
+                                <el-form-item label="请求体">
+                                    <el-input v-model="options.action_kwargs.data" placeholder="请输入请求体" />
+                                </el-form-item>
+                            </template>
+                        </template>
                     </template>
                     <el-form-item>
-                        <el-button type="primary" @click="console.log(form)">添加</el-button>
+                        <el-button type="primary" @click="addAutoTask">添加</el-button>
                     </el-form-item>
                 </el-form>
             </div>
@@ -180,6 +227,7 @@ import { trigger, timer } from '@/utils/automate'
 import ItemCard from "@/components/ItemCard.vue";
 import TaskResult from "@/components/TaskResult.vue";
 import CpuSelect from "@/components/CpuSelect.vue";
+import ItemSelect from "@/components/ItemSelect.vue";
 import { ElMessage, ElTag, ElButton } from 'element-plus'
 
 const statusMap = {
@@ -203,6 +251,7 @@ export default {
         ItemCard,
         TaskResult,
         CpuSelect,
+        ItemSelect,
     },
     data() {
         return {
@@ -261,6 +310,8 @@ export default {
                 name: [],
                 cpuList: [],
                 actions: [],
+                itemList: [],
+                action_kwargs: {},
             },
             form: {
                 name: "",
@@ -319,19 +370,91 @@ export default {
                     console.error('Error loading tasks:', error);
                 });
         },
-        addAutoTask() {
+        showAutoTaskDialog() {
             this.showAddTaskDialog = true;
             this.fetchAutoTaskConfig();
+        },
+        addAutoTask() {
+            console.log(this.form);
+            if (!this.form.name || !this.form.action) {
+                ElMessage.error('请填写完整信息');
+                return;
+            }
+            if (this.form.name === 'CPU空闲时' && !this.form.trigger_kwargs.cpu_name) {
+                ElMessage.error('请选择监听的CPU');
+                return;
+            }
+            if (this.form.action === 'craft' && !this.form.action_kwargs.item_name) {
+                ElMessage.error('请选择合成物品');
+                return;
+            }
+            if (this.form.action === 'craft' && !this.form.action_kwargs.item_amount) {
+                ElMessage.error('请填写合成数量');
+                return;
+            }
+            if (this.form.action === 'notify') {
+                if (this.options.action_kwargs.data) {
+                    try {
+                        this.form.action_kwargs.data = JSON.parse(this.options.action_kwargs.data);
+                    } catch (error) {
+                        ElMessage.error('请求体必须是 JSON 格式');
+                        console.error('Error parsing JSON:', error);
+                        return;
+                    }
+                }
+                if (this.options.action_kwargs.params) {
+                    try {
+                        this.form.action_kwargs.params = JSON.parse(this.options.action_kwargs.params);
+                    } catch (error) {
+                        ElMessage.error('请求参数必须是 JSON 格式');
+                        console.error('Error parsing JSON:', error);
+                        return;
+                    }
+                }
+                if (this.options.action_kwargs.headers) {
+                    try {
+                        this.form.action_kwargs.headers = JSON.parse(this.options.action_kwargs.headers);
+                    } catch (error) {
+                        ElMessage.error('请求头必须是 JSON 格式');
+                        console.error('Error parsing JSON:', error);
+                        return;
+                    }
+                }
+                if (!this.form.action_kwargs.url || !this.form.action_kwargs.method) {
+                    ElMessage.error('请求地址和方法不能为空');
+                    return;
+                }
+                let type = this.config.find(item => item.name === this.form.name).type;
+                this.submitTask(type, this.form);
+            }
+            
+        },
+        submitTask(type, form) {
+            if (type === '触发器') {
+                trigger.addTrigger(form, (res) => {
+                    ElMessage.success('任务添加成功');
+                    this.showAddTaskDialog = false;
+                    this.loadAutoTasks();
+                });
+            } else {
+                timer.addTimer(form, (res) => {
+                    ElMessage.success('任务添加成功');
+                    this.showAddTaskDialog = false;
+                    this.loadAutoTasks();
+                });
+            }
         },
         fetchAutoTaskConfig() {
             Promise.all([
                 new Promise((resolve) => {
                     trigger.getTriggerConfig((data) => {
+                        data.forEach(item => item.type = '触发器');
                         resolve(data);
                     });
                 }),
                 new Promise((resolve) => {
                     timer.getTimerConfig((data) => {
+                        data.forEach(item => item.type = '定时器');
                         resolve(data);
                     });
                 })
@@ -413,6 +536,10 @@ export default {
                 action_kwargs: {},
             };
             if (this.form.name) {
+                if (this.config.find(item => item.name === this.form.name).type === '触发器') {
+                    this.form.interval = 180;
+                }
+                this.loadDefaultTriggerArgs(this.form.name);
                 this.options.actions = this.config.find(item => item.name === this.form.name).actions.map(action => ({
                     label: action.name,
                     value: action.id,
@@ -420,13 +547,54 @@ export default {
                 }));
             }
         },
+        loadDefaultTriggerArgs(name) {
+            let defaultArg = {
+                'CPU空闲时': {
+                    client_id: "",
+                },
+                '延迟任务': {
+                    delay: 60,
+                },
+            }
+            if (defaultArg[name]) {
+                this.form.trigger_kwargs = defaultArg[name];
+            }
+        },
+        onActionSelected(action) {
+            this.form.action = action;
+            this.loadDefaultActionArgs(action);
+        },
+        loadDefaultActionArgs(action) {
+            let defaultArg = {
+                'craft': {
+                    item_amount: 1,
+                    client_id: "",
+                },
+                'notify': {
+                    method: "POST",
+                },
+            }
+            if (defaultArg[action]) {
+                this.form.action_kwargs = defaultArg[action];
+            }
+        },
         onTriggerCpuSelected(cpu) {
             this.form.trigger_kwargs.cpu_name = cpu;
-            console.log('选中的CPU:', cpu);
         },
         onLoadCpuList(cpuList) {
             this.options.cpuList = cpuList;
         },
+        onActionItemSelected(item) {
+            this.form.action_kwargs.item_name = item.name;
+            this.form.action_kwargs.item_damage = item.damage;
+            if (item.name === 'ae2fc:fluid_drop') {
+                this.form.action_kwargs.label = item.label;
+            }
+        },
+        onLoadedItemList(itemList) {
+            this.options.itemList = itemList;
+        },
+
     },
     created() {
         this.loadAutoTasks();

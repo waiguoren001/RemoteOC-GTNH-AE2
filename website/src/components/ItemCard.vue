@@ -42,7 +42,11 @@ export default {
     methods: {
         updateItem(item) {
             const updatedItem = itemUtil.getItem(item);
-            item.image = itemUtil.getItemIcon(updatedItem);
+            if (item.name === "ae2fc:fluid_drop") {
+                item.image = itemUtil.getFluidIcon(data);
+            } else {
+                item.image = itemUtil.getItemIcon(updatedItem);
+            }
             item.title = itemUtil.getName(updatedItem, item, {}) || item.label;
         }
     },
@@ -67,6 +71,7 @@ export default {
 }
 
 .words {
+    line-height: 24px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

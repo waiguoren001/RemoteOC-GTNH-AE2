@@ -52,7 +52,8 @@ local function simpleItemInfo(item)
         name = item.name,
         label = item.label,
         damage = item.damage,
-        size = item.size
+        size = item.size,
+        isCraftable = item.isCraftable
     }
 end
 
@@ -60,6 +61,9 @@ local function simpleItemsInfo(items)
     if items == nil then return end
     for i, item in pairs(items) do
         items[i] = simpleItemInfo(item)
+        if i % 50 == 0 then
+            os.sleep(0)
+        end
     end
 end
 
@@ -67,9 +71,12 @@ local function removeEmptyItem(items)
     if items == nil then return nil end
 
     local newOne = {}
-    for _, item in pairs(items) do
+    for i, item in pairs(items) do
         if item.size ~= nil and item.size ~= 0 or item.amount ~= nil and item.amount ~= 0 then
             table.insert(newOne, simpleItemInfo(item))
+        end
+        if i % 50 == 0 then
+            os.sleep(0)
         end
     end
     return newOne

@@ -59,6 +59,7 @@ task_config = {
         "cache": True,
         "handle": None,
         "callback": None,
+        "chunked": True,
     },
     "getAllCraftables": {  # 获取AE网络里所有可合成的物品信息
         "client_id": "client_01",

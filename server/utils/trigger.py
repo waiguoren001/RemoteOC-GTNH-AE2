@@ -3,102 +3,11 @@ import json
 import threading
 import uuid
 import copy
+import os
 from fastapi import HTTPException
 from .utils import logger, READY, PENDING, COMPLETED
 from .task import TaskManager, task_manager
 from config import trigger_config
-
-"""trigger_config = {
-    "CPU空闲时": {
-        "interval": 180,  # 任务执行间隔
-        "description": "当 CPU 空闲时，执行任务",
-        "task": {
-            # 用占位符{xxx}表示参数，用于动态替换
-            "task_id": None,  # 任务 ID, None 则自动生成
-            "client_id": "{client_id}",
-            "commands": [
-                "return ae.getCpuInfoByName('{cpu_name}')",
-            ],
-            "callback": check_cpu_free,  # 返回值为 True 时执行任务
-        },
-        "args": [
-            {
-                "key": "client_id",
-                "field": "client_id",
-                "type": "str",
-            },
-            {
-                "key": "cpu_name",
-                "field": "cpu_name",
-                "type": "str",
-            },
-        ],
-        # 可选操作列表
-        "actions": {
-            "craft": {
-                "name": "合成物品",
-                "description": None,
-                "function": craft_item,
-                "args": [
-                    {
-                        "field": "client_id",
-                        "type": "str",
-                    },
-                    {
-                        "field": "name",
-                        "type": "str",
-                    },
-                    {
-                        "field": "damage",
-                        "type": "int",
-                    },
-                    {
-                        "field": "amount",
-                        "type": "int",
-                        "default": 1,
-                    },
-                    {
-                        "field": "cpu_name",
-                        "type": "str",
-                        "default": None,
-                    },
-                    {
-                        "field": "label",
-                        "type": "str",
-                        "default": None,
-                    },
-                ],
-            },
-            "notify": {
-                "name": "发送通知",
-                "description": "发送HTTP请求推送API，通知用户",
-                "function": send_notification,
-                "args": [
-                    {
-                        "field": "method",
-                        "type": "str",
-                        "default": "GET",
-                    },
-                    {
-                        "field": "url",
-                        "type": "str",
-                    },
-                    {
-                        "field": "params",
-                        "type": "dict",
-                        "default": None,
-                    },
-                    {
-                        "field": "data",
-                        "type": "dict",
-                        "default": None,
-                    },
-                ],
-            },
-        },
-    },
-}
-"""
 
 
 class TriggerManager:
@@ -155,6 +64,30 @@ class TriggerManager:
             # 如果是字符串，使用 .format 替换占位符
             return obj.format(**params)
         return obj
+    
+    def replace_placeholders_2(self, data, params: dict):
+        """
+        递归替换字典中的占位符<XXX>为参数值。
+
+        :param data: 要处理的数据，可以是嵌套的字典、列表或字符串。
+        :param params: 参数字典。
+        
+        :return: 替换后的数据。
+        """
+        if isinstance(data, dict):
+            return {key: self.replace_placeholders_2(value, params) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self.replace_placeholders_2(item, params) for item in data]
+        elif isinstance(data, str):
+            for key, value in params.items():
+                if not isinstance(value, str):
+                    continue
+                placeholder = f"<{key.upper()}>"
+                if placeholder in data:
+                    data = data.replace(placeholder, value)
+            return data
+        else:
+            return data
 
     def execute_action(self, action, action_kwargs):
         """
@@ -166,7 +99,7 @@ class TriggerManager:
         func = action.get("function")
         if not callable(func):
             raise ValueError("指定的 function 不是可调用对象")
-        
+
         # 提取参数定义
         args_def = action.get("args", [])
         
@@ -307,7 +240,11 @@ class TriggerManager:
                 if task_status.get("status") == COMPLETED and task_status.get("results") == True:
                     # 执行操作
                     action = config['action']
+                    trigger_kwargs = config.get('kwargs', {})
                     action_kwargs = action.get("action_kwargs", {})
+                    # 替换action_kwargs中的占位符
+                    action_kwargs = self.replace_placeholders_2(action_kwargs, trigger_kwargs)
+                    action_kwargs = self.replace_placeholders_2(action_kwargs, os.environ)
                     config['result'] = {"success": True, "data": self.execute_action(action, action_kwargs)}
                     config['status'] = COMPLETED
                     config['time']['completed'] = datetime.now().isoformat()

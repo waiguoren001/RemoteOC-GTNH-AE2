@@ -2,6 +2,10 @@ import logging
 import os
 from dotenv import load_dotenv
 
+
+if os.path.exists('.env.dev'):
+    load_dotenv('.env.dev')
+
 load_dotenv()
 
 levels = {

@@ -108,7 +108,7 @@ export default {
         },
         handleVisibleChange(visible) {
             if (visible) {
-                if (this.options) {
+                if (this.options && this.options.length > 0) {
                     this.cpuList = this.options;
                 }
                 this.cpuOptions = this.cpuList.filter(cpu => {
