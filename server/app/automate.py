@@ -1,4 +1,4 @@
-from config import SERVER_TOKEN
+from config import SERVER_TOKEN, action_template
 from utils.utils import *
 from utils.trigger import trigger_manager
 from utils.timer import timer_manager
@@ -114,3 +114,9 @@ async def stop_timer(timer: TimerRequestModel):
     """停止定时器"""
     timer_manager.stop(timer.timer_id)
     return {"code": 200, "message": "success"}
+
+
+@router.get("/action/template", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
+async def get_action_template():
+    """获取可用 Action 模板"""
+    return {"code": 200, "message": "success", "data": action_template}

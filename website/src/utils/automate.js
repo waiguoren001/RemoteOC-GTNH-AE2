@@ -283,8 +283,25 @@ const timer = {
     }
 }
 
+const getActionTemplats = async (callback) => {
+    try {
+        const response = await Requests.get('/api/automate/action/template');
+        const data = response.data;
+        if (data.code === 200) {
+            if (callback) callback(data.data);
+        } else {
+            ElMessage.error(`获取操作模板失败: ${data.code}, ${data.message ? data.message : data}`);
+            console.error(data);
+        }
+    } catch (error) {
+        ElMessage.error(`获取操作模板失败: ${error}`);
+        console.error('Error fetching action templates:', error);
+    }
+}
+
 
 export {
     trigger,
-    timer
+    timer,
+    getActionTemplats
 };

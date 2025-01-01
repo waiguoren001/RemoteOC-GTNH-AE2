@@ -317,4 +317,27 @@ timer_config = {
     },
 }
 
+# action模板
+action_template = {
+    "CPU空闲时": {
+        "notify": [
+            {
+                "name": "发送QQ群通知",
+                "description": "发送QQ群通知，需要在环境变量中配置参数",
+                "action_kwargs": {
+                    "method": "POST",
+                    "url": "http://<ONEBOT_SERVER_ADDRESS>/send_group_msg",
+                    "headers": {"Authorization": "<ONEBOT_SERVER_TOKEN>"},
+                    "data": """{"group_id": "<TARGET_GROUP_ID>","message": "CPU '<CPU_NAME>' 已空闲"}""",
+                },
+                "args": {
+                    # action_kwargs中属于key-value类型的参数
+                    "key_values": ["headers"],
+                },
+            },
+        ]
+    }
+}
+
+
 SERVER_TOKEN = os.getenv("SERVER_TOKEN")

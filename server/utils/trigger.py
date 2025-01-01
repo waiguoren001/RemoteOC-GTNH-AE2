@@ -248,7 +248,7 @@ class TriggerManager:
                     config['result'] = {"success": True, "data": self.execute_action(action, action_kwargs)}
                     config['status'] = COMPLETED
                     config['time']['completed'] = datetime.now().isoformat()
-                    self.stop(trigger_task_id)
+                    self.stop(trigger_task_id, is_completed=True)
                     logger.debug(f"Action '{action['name']}' executed successfully.")
 
                 elif task_status.get("status") == COMPLETED and task_status.get("results") != True:
@@ -292,7 +292,7 @@ class TriggerManager:
         trigger_config['time']['last_start'] = datetime.now().isoformat()
         logger.debug(f"Trigger '{trigger_task_id}' started.")
 
-    def stop(self, trigger_task_id, force=False):
+    def stop(self, trigger_task_id, force=False, is_completed=False):
         """
         停止触发器。
         :param trigger_task_id: 触发器ID。
@@ -312,7 +312,7 @@ class TriggerManager:
         if timer:
             timer.cancel()
             trigger_config['timer'] = None
-            trigger_config['status'] = READY
+            trigger_config['status'] = COMPLETED if is_completed else READY
             task_manager.remove_task(trigger_config.get('task', {}).get('task_id'))
             logger.debug(f"Trigger '{trigger_task_id}' stopped.")
     

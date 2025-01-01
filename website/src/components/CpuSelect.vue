@@ -30,6 +30,12 @@ export default {
             type: String,
             required: false,
         },
+        // 是否必须已命名
+        onlyNamed: {
+            type: Boolean,
+            required: false,
+            default: false,
+        },
         autoSelect: {
             type: Boolean,
             required: false,
@@ -85,6 +91,9 @@ export default {
                 let cpus = result.data;
                 let cpuList = [];
                 for (let cpu of cpus) {
+                    if (this.onlyNamed && cpu.name === "") {
+                        continue;
+                    }
                     let name = cpu.name !== "" ? cpu.name : `CPU #${cpuList.length + 1}`;
                     cpuList.push({
                         name: name,
