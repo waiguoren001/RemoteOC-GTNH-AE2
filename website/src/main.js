@@ -35,6 +35,10 @@ function updateDeviceType() {
 window.addEventListener('resize', updateDeviceType);
 app.provide('isMobile', isMobile);
 
+// 全局变量-仓库地址
+app.config.globalProperties.$defaultLinkPrefix = "https://github.com/";
+app.config.globalProperties.$userName = "z5882852";
+app.config.globalProperties.$repoName = "RemoteOC-GTNH-AE2";
 
 app.mount('#app')
 
