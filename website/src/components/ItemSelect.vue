@@ -3,7 +3,10 @@
         :loading="loading" :item-height="56" filterable  :remote-method="filterMethod"
         @visible-change="handleVisibleChange" popper-class="item-select-popper">
         <template #header>
-            <el-button size="small" @click="getAllSilempleItems" :loading="headerLoading">刷新</el-button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <el-button size="small" @click="getAllSilempleItems" :loading="headerLoading">刷新</el-button>
+                <el-text size="small">最近更新: {{ lastUpdate }}</el-text>
+            </div>
         </template>
 
         <template #default="{ item }">
@@ -72,11 +75,12 @@ export default {
                 label: 'title',
                 value: 'title',
             },
-            placeholder: '请选择物品',
+            placeholder: '在此输入搜索并选择物品',
             selectedItem: '',
             headerLoading: false,
             loading: true,
             firstLoad: true,
+            lastUpdate: '未知',
         };
     },
     watch: {
@@ -113,6 +117,7 @@ export default {
             this.loading = false;
             if (data.result) {
                 let itemList = data.result;
+                this.lastUpdate = data.completed_time.replace('T', ' ').replace('Z', ' ').split('.')[0];
 
                 // 遍历每个物品，添加 icon 和 title 属性
                 itemList.forEach(item => {
@@ -120,7 +125,6 @@ export default {
                     item.icon = itemUtil.getItemIcon(item_);
                     item.title = itemUtil.getName(item_, item, data) || item.label;
                 });
-
                 if (!this.options) {
                     this.itemList = itemList;
                     this.handleVisibleChange(true);

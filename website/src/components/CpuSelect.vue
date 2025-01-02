@@ -2,7 +2,10 @@
     <el-select-v2 v-model="selectedCpu" :options="cpuOptions" :props="selectProps" :placeholder="placeholder"
         @change="handleCpuSelected" @visible-change="handleVisibleChange">
         <template #header>
-            <el-button size="small" @click="getCpuList" :loading="headerLoading">刷新</el-button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <el-button size="small" @click="getCpuList" :loading="headerLoading">刷新</el-button>
+                <el-text size="small">最近更新: {{ lastUpdate }}</el-text>
+            </div>
         </template>
         <template #default="{ item }">
             <template v-if="item.value">
@@ -18,7 +21,7 @@
 </template>
 
 <script>
-import { fetchStatus, addTask } from '@/utils/task'
+import { fetchStatus, fetchStatusOnce, addTask } from '@/utils/task'
 
 export default {
     props: {
@@ -57,6 +60,8 @@ export default {
             placeholder: this.autoSelect ? '自动分配' : '请选择CPU',
             selectedCpu: '',
             headerLoading: false,
+            firstLoad: true,
+            lastUpdate: '未知',
         };
     },
     watch: {
@@ -70,6 +75,9 @@ export default {
             },
         },
     },
+    mounted() {
+        this.fetchCpus();
+    },
     methods: {
         handleCpuSelected() {
             this.$emit('handleCpuSelected', this.selectedCpu);
@@ -80,6 +88,11 @@ export default {
                 fetchStatus("getCpuList", null, null, this.handleTaskComplete, 1000);
             })
         },
+        fetchCpus() {
+            if (this.firstLoad && (!this.options || this.options.length === 0)) {
+                fetchStatusOnce("getCpuList", this.handleTaskComplete);
+            }
+        },
         handleTaskComplete(data) {
             this.headerLoading = false;
             if (data.result) {
@@ -88,6 +101,8 @@ export default {
                     this.$message.warning(result.message ? result.message : "未知错误");
                     return
                 }
+                this.lastUpdate = data.completed_time.replace('T', ' ').replace('Z', ' ').split('.')[0];
+
                 let cpus = result.data;
                 let cpuList = [];
                 for (let cpu of cpus) {
@@ -109,11 +124,14 @@ export default {
                     this.cpuList = cpuList;
                     this.handleVisibleChange(true);
                 }
-                this.$message.success(`刷新CPU列表成功!`);
+                if (!this.firstLoad) {
+                    this.$message.success(`刷新CPU列表成功!`);
+                }
                 this.$emit('handleLoadCpuList', cpuList);
             } else {
                 this.$message.warning(`返回数据为空!`);
             }
+            this.firstLoad = false;
         },
         handleVisibleChange(visible) {
             if (visible) {

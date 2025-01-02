@@ -208,7 +208,7 @@
 
                                 <template v-if="form.action === 'craft'">
                                     <el-form-item label="目标物品" :required="true">
-                                        <ItemSelect :options="options.itemList" :craft="true"
+                                        <ItemSelect :options="options.itemList" :craft="true" footer="流体不支持中文搜索"
                                             @handleLoadItemList="onLoadedItemList"
                                             @handleItemSelected="onActionItemSelected" />
                                     </el-form-item>
@@ -483,11 +483,9 @@ export default {
                 }
                 this.form.action_kwargs.method = this.options.action_kwargs.method;
                 this.form.action_kwargs.url = this.options.action_kwargs.url;
-                let type = this.config.find(item => item.name === this.form.name).type;
-                console.log(this.form);
-                this.submitTask(type, this.form);
             }
-
+            let type = this.config.find(item => item.name === this.form.name).type;
+            this.submitTask(type, this.form);
         },
         submitTask(type, form) {
             if (type === '触发器') {
@@ -603,7 +601,6 @@ export default {
             }
         },
         handleInfo(data) {
-            console.log(data);
             Object.keys(data.time).forEach(key => {
                 if (!data.time[key]) {
                     return;
@@ -655,6 +652,11 @@ export default {
         onActionSelected(action) {
             this.form.action = action;
             this.loadDefaultActionArgs(this.form.name, action);
+            if (!this.options.action_templates.data[this.form.name]) {
+                this.showUseTemplateButton = false;
+                this.options.action_templates.options = [];
+                return;
+            }
             let template = this.options.action_templates.data[this.form.name][action];
             if (template && template.length > 0) {
                 this.showUseTemplateButton = true;

@@ -72,7 +72,7 @@ local function removeEmptyItem(items)
 
     local newOne = {}
     for i, item in pairs(items) do
-        if item.size ~= nil and item.size ~= 0 or item.amount ~= nil and item.amount ~= 0 then
+        if item.size ~= nil or item.amount ~= nil then
             table.insert(newOne, simpleItemInfo(item))
         end
         if i % 50 == 0 then
