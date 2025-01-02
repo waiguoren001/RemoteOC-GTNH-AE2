@@ -114,7 +114,7 @@
                         <el-divider></el-divider>
                         <el-text size="large">
                             执行结果
-                            <TaskResult v-if="info.action.name === '合成物品' && info.result" :task_id="info.result" />
+                            <TaskResult v-if="info.action.name === '合成物品' && info.result" :task_id="info.result.data" />
                         </el-text>
                         <el-text size="large" v-if="info.result" style="width: 100%;">
                             <el-scrollbar>
