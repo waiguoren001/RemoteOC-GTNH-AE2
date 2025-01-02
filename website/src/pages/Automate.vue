@@ -14,154 +14,128 @@
             </el-card>
         </el-header>
         <el-main style="width: 100%; overflow: hidden;" v-loading="mainLoading" element-loading-text="loading">
-            <el-card class="box-card">
-                <el-auto-resizer>
-                    <template #default="{ height, width }">
-                        <el-table-v2 :columns="columns" :data="tasks" :width="width" :height="height"
-                            :header-height="50" :row-height="75" />
-                    </template>
-                </el-auto-resizer>
+            <el-card class="table-box-card">
+                <el-table :data="tasks" border stripe style="width: 100%; height: 100%;">
+                    <el-table-column type="index" label="序号" width="80"  align="center"></el-table-column>
+                    <el-table-column prop="id" label="ID" width="320" align="center"></el-table-column>
+                    <el-table-column prop="type" label="类型" min-width="120" align="center"></el-table-column>
+                    <el-table-column prop="name" label="触发条件" min-width="120" align="center"></el-table-column>
+                    <el-table-column prop="action.name" label="执行操作" min-width="100" align="center"></el-table-column>
+                    <el-table-column prop="status" label="状态" min-width="85" align="center">
+                        <template #default="{ row }">
+                            <el-tag :type="statusMap[row.status].type">{{ statusMap[row.status].text }}</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="120" align="center" fixed="right">
+                        <template #default="{ row }">
+                            <div class="op-button-grid">
+                                <el-button type="success" size="small" plain
+                                    @click="handleStart(row)" :disabled="row.running || row.status === 'completed'">
+                                    启动
+                                </el-button>
+                                <el-button type="warning" size="small" plain
+                                    @click="handleStop(row)" :disabled="!row.running || row.status === 'completed'">
+                                    停止
+                                </el-button>
+                                <el-button size="small" plain @click="handleInfo(row)">详情</el-button>
+                                <el-button type="danger" size="small" plain @click="handleRemove(row)">移除</el-button>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </el-table>
             </el-card>
         </el-main>
         <!-- 任务详情 -->
         <el-dialog v-model="showInfoDialog" class="task-dialog" title="自动化任务详情" fullscreen align-center>
-            <div class="info-container">
-                <el-space alignment="normal" direction="vertical" style="width: 100%; margin-bottom: 20px;">
-                    <el-descriptions title="基本信息" :column="1" border label-width="80px">
-                        <el-descriptions-item label="ID">{{ info.id }}</el-descriptions-item>
-                        <el-descriptions-item label="类型">{{ info.type }}</el-descriptions-item>
-                        <el-descriptions-item label="状态">
-                            <el-tag :type="statusMap[info.status].type">{{ statusMap[info.status].text }}</el-tag>
-                        </el-descriptions-item>
-                        <el-descriptions-item v-if="info.type === '触发器'" label="检测间隔">
-                            {{ info.interval }} 秒
-                        </el-descriptions-item>
+            <el-scrollbar>
+                <div class="info-container">
+                    <el-space alignment="normal" direction="vertical" style="width: 100%; margin-bottom: 20px;">
+                        <el-descriptions title="基本信息" :column="1" border label-width="80px">
+                            <el-descriptions-item label="ID">{{ info.id }}</el-descriptions-item>
+                            <el-descriptions-item label="类型">{{ info.type }}</el-descriptions-item>
+                            <el-descriptions-item label="状态">
+                                <el-tag :type="statusMap[info.status].type">{{ statusMap[info.status].text }}</el-tag>
+                            </el-descriptions-item>
+                            <el-descriptions-item v-if="info.type === '触发器'" label="检测间隔">
+                                {{ info.interval }} 秒
+                            </el-descriptions-item>
 
-                    </el-descriptions>
+                        </el-descriptions>
 
-                    <el-divider></el-divider>
-                    <el-text size="large">生命周期</el-text>
+                        <el-divider></el-divider>
+                        <el-text size="large">生命周期</el-text>
 
-                    <el-timeline style="margin-top: 20px; width: 100%;">
-                        <el-timeline-item :timestamp="info.time.created" size="large" color="#409EFF">
-                            任务创建
-                        </el-timeline-item>
-                        <el-timeline-item v-if="info.time.last_start" :timestamp="info.time.last_start" size="large"
-                            color="#67C23A">
-                            上一次启动
-                        </el-timeline-item>
-                        <el-timeline-item v-if="info.time.last_monitor" :timestamp="info.time.last_monitor" size="large"
-                            color="#E6A23C">
-                            最近检测
-                        </el-timeline-item>
-                        <el-timeline-item v-if="info.time.excuted" :timestamp="info.time.excuted" size="large"
-                            :color="info.time.completed ? '#E6A23C' : ''">
-                            执行操作 {{ info.time.completed ? '' : '(预计)' }}
-                        </el-timeline-item>
-                        <el-timeline-item v-if="info.time.completed" :timestamp="info.time.completed" size="large"
-                            color="#F56C6C">
-                            任务完成
-                        </el-timeline-item>
-                    </el-timeline>
-                    <el-divider></el-divider>
-                    <el-descriptions title="触发条件" :column="1" border label-width="150px">
-                        <el-descriptions-item label="类型">{{ info.name }}</el-descriptions-item>
-                        <el-descriptions-item label="描述">{{ info.description }}</el-descriptions-item>
-                        <el-descriptions-item v-for="arg in info.args" :key="arg.field" :label="arg.description">
-                            <el-text>{{ info.kwargs[arg.field] }}</el-text>
-                        </el-descriptions-item>
-                    </el-descriptions>
-                    <el-divider></el-divider>
-                    <el-descriptions title="执行操作" :column="1" border label-width="150px">
-                        <el-descriptions-item label="类型">{{ info.action.name }}</el-descriptions-item>
-                        <el-descriptions-item label="描述">{{ info.action.description }}</el-descriptions-item>
-                        <el-descriptions-item v-if="info.action.name === '合成物品'" label="合成目标">
-                            <ItemCard class="item-card-container" :item="{
-                                name: info.action.action_kwargs.item_name,
-                                damage: info.action.action_kwargs.item_damage,
-                                amount: info.action.action_kwargs.item_amount,
-                                label: info.action.action_kwargs.label,
-                            }" />
-                        </el-descriptions-item>
-                        <el-descriptions-item v-for="arg in info.action.args" :key="arg.field" :label="arg.description">
-                            <el-text>{{ info.action.action_kwargs[arg.field] }}</el-text>
-                        </el-descriptions-item>
-                    </el-descriptions>
-                    <el-divider></el-divider>
-                    <el-text size="large" truncated>
-                        执行结果
-                        <TaskResult v-if="info.action.name === '合成物品' && info.result" :task_id="info.result" />
-                    </el-text>
-                    <el-text size="large" v-if="info.result">
-                        <pre>{{ info.result }}</pre>
-                    </el-text>
-                    <el-text size="large" v-else>
-                        无
-                    </el-text>
-                </el-space>
-            </div>
+                        <el-timeline style="margin-top: 20px; width: 100%;">
+                            <el-timeline-item :timestamp="info.time.created" size="large" color="#409EFF">
+                                任务创建
+                            </el-timeline-item>
+                            <el-timeline-item v-if="info.time.last_start" :timestamp="info.time.last_start" size="large"
+                                color="#67C23A">
+                                上一次启动
+                            </el-timeline-item>
+                            <el-timeline-item v-if="info.time.last_monitor" :timestamp="info.time.last_monitor"
+                                size="large" color="#E6A23C">
+                                最近检测
+                            </el-timeline-item>
+                            <el-timeline-item v-if="info.time.excuted" :timestamp="info.time.excuted" size="large"
+                                :color="info.time.completed ? '#E6A23C' : ''">
+                                执行操作 {{ info.time.completed ? '' : '(预计)' }}
+                            </el-timeline-item>
+                            <el-timeline-item v-if="info.time.completed" :timestamp="info.time.completed" size="large"
+                                color="#F56C6C">
+                                任务完成
+                            </el-timeline-item>
+                        </el-timeline>
+                        <el-divider></el-divider>
+                        <el-descriptions title="触发条件" :column="1" border label-width="150px">
+                            <el-descriptions-item label="类型">{{ info.name }}</el-descriptions-item>
+                            <el-descriptions-item label="描述">{{ info.description }}</el-descriptions-item>
+                            <el-descriptions-item v-for="arg in info.args" :key="arg.field" :label="arg.description">
+                                <el-text>{{ info.kwargs[arg.field] }}</el-text>
+                            </el-descriptions-item>
+                        </el-descriptions>
+                        <el-divider></el-divider>
+                        <el-descriptions title="执行操作" :column="1" border label-width="150px">
+                            <el-descriptions-item label="类型">{{ info.action.name }}</el-descriptions-item>
+                            <el-descriptions-item label="描述">{{ info.action.description }}</el-descriptions-item>
+                            <el-descriptions-item v-if="info.action.name === '合成物品'" label="合成目标">
+                                <ItemCard class="item-card-container" :item="{
+                                    name: info.action.action_kwargs.item_name,
+                                    damage: info.action.action_kwargs.item_damage,
+                                    amount: info.action.action_kwargs.item_amount,
+                                    label: info.action.action_kwargs.label,
+                                }" />
+                            </el-descriptions-item>
+                            <el-descriptions-item v-for="arg in info.action.args" :key="arg.field"
+                                :label="arg.description">
+                                <el-text>{{ info.action.action_kwargs[arg.field] }}</el-text>
+                            </el-descriptions-item>
+                        </el-descriptions>
+                        <el-divider></el-divider>
+                        <el-text size="large">
+                            执行结果
+                            <TaskResult v-if="info.action.name === '合成物品' && info.result" :task_id="info.result" />
+                        </el-text>
+                        <el-text size="large" v-if="info.result" style="width: 100%;">
+                            <el-scrollbar>
+                                <pre>{{ info.result }}</pre>
+                            </el-scrollbar>
+                        </el-text>
+                        <el-text size="large" v-else>
+                            无
+                        </el-text>
+                    </el-space>
+                </div>
+            </el-scrollbar>
         </el-dialog>
         <!-- 添加自动化任务 -->
         <el-dialog v-model="showAddTaskDialog" class="task-dialog" title="添加自动化任务" fullscreen align-center>
-            <div class="info-container">
-                <el-form :model="form" label-width="auto">
-                    <el-form-item label="触发条件" :required="true">
-                        <el-select-v2 v-model="form.name" placeholder="请选择触发条件" :options="options.name"
-                            @change="resetFormAndLoadActions()">
-                            <template #default="{ item }">
-                                <div
-                                    style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                    <span style="flex: 0 0 80px; text-align: left; margin-right: 8px;">
-                                        {{ item.label }}
-                                    </span>
-                                    <span style="flex: 1; color: var(--el-text-color-secondary); font-size: 13px;">
-                                        {{ item.desc }}
-                                    </span>
-                                </div>
-                            </template>
-                        </el-select-v2>
-                    </el-form-item>
-                    <template v-if="form.name === 'CPU空闲时'">
-                        <el-form-item label="监听CPU" :required="true">
-                            <CpuSelect status="busy" footer="仅能选择已命名且繁忙的CPU" :options="options.cpuList"
-                                :onlyNamed="true" @handleCpuSelected="onTriggerCpuSelected"
-                                @handleLoadCpuList="onLoadCpuList" />
-                        </el-form-item>
-                        <el-form-item label="客户端ID">
-                            <el-tooltip effect="dark" content="不指定则留空" placement="top">
-                                <el-input v-model="form.trigger_kwargs.client_id" placeholder="请输入客户端ID" />
-                            </el-tooltip>
-                        </el-form-item>
-                        <el-form-item label="检测间隔" :required="true">
-                            <el-input-number v-model="form.interval" placeholder="检测间隔" :min="1" :max="3600">
-                                <template #suffix>
-                                    秒
-                                </template>
-                            </el-input-number>
-                        </el-form-item>
-                    </template>
-                    <template v-if="form.name === '延迟任务'">
-                        <el-form-item label="延迟时间" :required="true">
-                            <el-input-number v-model="form.trigger_kwargs.delay" placeholder="延迟" :min="60"
-                                :max="604800">
-                                <template #suffix>
-                                    秒
-                                </template>
-                            </el-input-number>
-                        </el-form-item>
-                    </template>
-                    <template v-if="form.name === '定时任务'">
-                        <el-form-item label="定时时间" :required="true">
-                            <el-date-picker v-model="form.trigger_kwargs.time" type="datetime" placeholder="选择执行时间"
-                                :editable="false" value-format="YYYY-MM-DD HH:mm:ss" />
-                        </el-form-item>
-                    </template>
-
-                    <!-- action -->
-                    <template v-if="form.name">
-                        <el-form-item label="执行操作" :required="true">
-                            <el-select-v2 v-model="form.action" placeholder="请选择执行操作" :options="options.actions"
-                                @change="onActionSelected">
+            <el-scrollbar>
+                <div class="info-container">
+                    <el-form :model="form" label-width="auto">
+                        <el-form-item label="触发条件" :required="true">
+                            <el-select-v2 v-model="form.name" placeholder="请选择触发条件" :options="options.name"
+                                @change="resetFormAndLoadActions()">
                                 <template #default="{ item }">
                                     <div
                                         style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
@@ -175,100 +149,158 @@
                                 </template>
                             </el-select-v2>
                         </el-form-item>
-                        <template v-if="form.action">
+                        <template v-if="form.name === 'CPU空闲时'">
+                            <el-form-item label="监听CPU" :required="true">
+                                <CpuSelect status="busy" footer="仅能选择已命名且繁忙的CPU" :options="options.cpuList"
+                                    :onlyNamed="true" @handleCpuSelected="onTriggerCpuSelected"
+                                    @handleLoadCpuList="onLoadCpuList" />
+                            </el-form-item>
+                            <el-form-item label="客户端ID">
+                                <el-tooltip effect="dark" content="不指定则留空" placement="top">
+                                    <el-input v-model="form.trigger_kwargs.client_id" placeholder="请输入客户端ID" />
+                                </el-tooltip>
+                            </el-form-item>
+                            <el-form-item label="检测间隔" :required="true">
+                                <el-input-number v-model="form.interval" placeholder="检测间隔" :min="1" :max="3600">
+                                    <template #suffix>
+                                        秒
+                                    </template>
+                                </el-input-number>
+                            </el-form-item>
+                        </template>
+                        <template v-if="form.name === '延迟任务'">
+                            <el-form-item label="延迟时间" :required="true">
+                                <el-input-number v-model="form.trigger_kwargs.delay" placeholder="延迟" :min="60"
+                                    :max="604800">
+                                    <template #suffix>
+                                        秒
+                                    </template>
+                                </el-input-number>
+                            </el-form-item>
+                        </template>
+                        <template v-if="form.name === '定时任务'">
+                            <el-form-item label="定时时间" :required="true">
+                                <el-date-picker v-model="form.trigger_kwargs.time" type="datetime" placeholder="选择执行时间"
+                                    :editable="false" value-format="YYYY-MM-DD HH:mm:ss" />
+                            </el-form-item>
+                        </template>
 
-                            <template v-if="form.action === 'craft'">
-                                <el-form-item label="目标物品" :required="true">
-                                    <ItemSelect :options="options.itemList" :craft="true"
-                                        @handleLoadItemList="onLoadedItemList"
-                                        @handleItemSelected="onActionItemSelected" />
-                                </el-form-item>
-                                <el-form-item label="合成数量" :required="true">
-                                    <el-input-number v-model="form.action_kwargs.item_amount" placeholder="合成数量"
-                                        :min="1">
-                                        <template #suffix>
-                                            个
-                                        </template>
-                                    </el-input-number>
-                                </el-form-item>
-                                <el-form-item label="指定CPU">
-                                    <el-tooltip effect="dark" content="如果请求合成时CPU繁忙，则合成失败" placement="top">
-                                        <CpuSelect status="all" footer="" :options="options.cpuList" :onlyNamed="true"
-                                            :autoSelect="true" @handleCpuSelected="onActionCpuSelected"
-                                            @handleLoadCpuList="onLoadCpuList" />
-                                    </el-tooltip>
-                                </el-form-item>
-                            </template>
+                        <!-- action -->
+                        <template v-if="form.name">
+                            <el-form-item label="执行操作" :required="true">
+                                <el-select-v2 v-model="form.action" placeholder="请选择执行操作" :options="options.actions"
+                                    @change="onActionSelected">
+                                    <template #default="{ item }">
+                                        <div
+                                            style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                            <span style="flex: 0 0 80px; text-align: left; margin-right: 8px;">
+                                                {{ item.label }}
+                                            </span>
+                                            <span
+                                                style="flex: 1; color: var(--el-text-color-secondary); font-size: 13px;">
+                                                {{ item.desc }}
+                                            </span>
+                                        </div>
+                                    </template>
+                                </el-select-v2>
+                            </el-form-item>
+                            <template v-if="form.action">
 
-                            <template v-if="form.action === 'notify'">
-                                <el-form-item label="请求方法" :required="true">
-                                    <el-select v-model="options.action_kwargs.method" placeholder="请选择请求方法">
-                                        <el-option label="GET" value="GET" />
-                                        <el-option label="POST" value="POST" />
-                                        <el-option label="PUT" value="PUT" />
-                                        <el-option label="DELETE" value="DELETE" />
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="请求地址" :required="true">
-                                    <el-input v-model="options.action_kwargs.url" placeholder="请输入请求地址" />
-                                </el-form-item>
-                                <el-form-item label="请求头">
-                                    <div class="key-value-group"
-                                        v-for="(item, index) in options.key_value_group.headers">
-                                        <el-input v-model="item.key" placeholder="请输入key" /> :
-                                        <el-input v-model="item.value" placeholder="请输入value" />
-                                        <el-button type="danger"
-                                            @click="options.key_value_group.headers.splice(index, 1)">
-                                            删除
+                                <template v-if="form.action === 'craft'">
+                                    <el-form-item label="目标物品" :required="true">
+                                        <ItemSelect :options="options.itemList" :craft="true"
+                                            @handleLoadItemList="onLoadedItemList"
+                                            @handleItemSelected="onActionItemSelected" />
+                                    </el-form-item>
+                                    <el-form-item label="合成数量" :required="true">
+                                        <el-input-number v-model="form.action_kwargs.item_amount" placeholder="合成数量"
+                                            :min="1">
+                                            <template #suffix>
+                                                个
+                                            </template>
+                                        </el-input-number>
+                                    </el-form-item>
+                                    <el-form-item label="指定CPU">
+                                        <el-tooltip effect="dark" content="如果请求合成时CPU繁忙，则合成失败" placement="top">
+                                            <CpuSelect status="all" footer="" :options="options.cpuList"
+                                                :onlyNamed="true" :autoSelect="true"
+                                                @handleCpuSelected="onActionCpuSelected"
+                                                @handleLoadCpuList="onLoadCpuList" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </template>
+
+                                <template v-if="form.action === 'notify'">
+                                    <el-form-item label="请求方法" :required="true">
+                                        <el-select v-model="options.action_kwargs.method" placeholder="请选择请求方法">
+                                            <el-option label="GET" value="GET" />
+                                            <el-option label="POST" value="POST" />
+                                            <el-option label="PUT" value="PUT" />
+                                            <el-option label="DELETE" value="DELETE" />
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="请求地址" :required="true">
+                                        <el-input v-model="options.action_kwargs.url" placeholder="请输入请求地址" />
+                                    </el-form-item>
+                                    <el-form-item label="请求头">
+                                        <div class="key-value-group"
+                                            v-for="(item, index) in options.key_value_group.headers">
+                                            <el-input v-model="item.key" placeholder="请输入key" /> :
+                                            <el-input v-model="item.value" placeholder="请输入value" />
+                                            <el-button type="danger"
+                                                @click="options.key_value_group.headers.splice(index, 1)">
+                                                删除
+                                            </el-button>
+                                        </div>
+                                        <el-button type="primary" size="small"
+                                            @click="options.key_value_group.headers.push({ key: '', value: '' })">
+                                            添加
                                         </el-button>
-                                    </div>
-                                    <el-button type="primary" size="small"
-                                        @click="options.key_value_group.headers.push({ key: '', value: '' })">
-                                        添加
-                                    </el-button>
-                                </el-form-item>
-                                <el-form-item label="请求参数">
-                                    <div class="key-value-group"
-                                        v-for="(item, index) in options.key_value_group.params">
-                                        <el-input v-model="item.key" placeholder="请输入key" /> :
-                                        <el-input v-model="item.value" placeholder="请输入value" />
-                                        <el-button type="danger"
-                                            @click="options.key_value_group.params.splice(index, 1)">
-                                            删除
+                                    </el-form-item>
+                                    <el-form-item label="请求参数">
+                                        <div class="key-value-group"
+                                            v-for="(item, index) in options.key_value_group.params">
+                                            <el-input v-model="item.key" placeholder="请输入key" /> :
+                                            <el-input v-model="item.value" placeholder="请输入value" />
+                                            <el-button type="danger"
+                                                @click="options.key_value_group.params.splice(index, 1)">
+                                                删除
+                                            </el-button>
+                                        </div>
+                                        <el-button type="primary" size="small"
+                                            @click="options.key_value_group.params.push({ key: '', value: '' })">
+                                            添加
                                         </el-button>
-                                    </div>
-                                    <el-button type="primary" size="small"
-                                        @click="options.key_value_group.params.push({ key: '', value: '' })">
-                                        添加
-                                    </el-button>
-                                </el-form-item>
-                                <el-form-item label="请求体">
-                                    <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 6 }"
-                                        v-model="options.action_kwargs.data" placeholder="请输入请求体" />
-                                </el-form-item>
+                                    </el-form-item>
+                                    <el-form-item label="请求体">
+                                        <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 6 }"
+                                            v-model="options.action_kwargs.data" placeholder="请输入请求体" />
+                                    </el-form-item>
+                                </template>
                             </template>
                         </template>
-                    </template>
 
-                    <el-form-item v-if="form.name && form.action">
-                        <el-button v-if="showUseTemplateButton" style="margin-right: auto;" type="primary"
-                            @click="this.showUseTemplateDialog = true">使用模板</el-button>
-                        <el-button style="margin-left: auto;" type="primary" @click="addAutoTask">添加</el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
+                        <el-form-item v-if="form.name && form.action">
+                            <el-button v-if="showUseTemplateButton" style="margin-right: auto;" type="primary"
+                                @click="this.showUseTemplateDialog = true">使用模板</el-button>
+                            <el-button style="margin-left: auto;" type="primary" @click="addAutoTask">添加</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </el-scrollbar>
         </el-dialog>
         <!-- 使用模板 -->
-        <el-dialog v-model="showUseTemplateDialog" style="height: 400px;" title="使用模板"  align-center>
-                    <el-table :data="this.options.action_templates.options" :height="340" width="100%">
-                        <el-table-column property="name" label="名称" width="200" />
-                        <el-table-column property="description" label="描述" />
-                        <el-table-column label="操作">
-                            <template #default="{ row }">
-                                <el-button type="primary" size="small" @click="comfirmUseTemplate(row)">使用</el-button>
-                            </template>
-                        </el-table-column>
-                    </el-table>
+        <el-dialog v-model="showUseTemplateDialog" class="template-dialog" style="height: 400px;" title="使用模板"
+            align-center>
+            <el-table :data="this.options.action_templates.options" :height="340" width="100%">
+                <el-table-column property="name" label="名称" />
+                <el-table-column property="description" label="描述" />
+                <el-table-column label="操作">
+                    <template #default="{ row }">
+                        <el-button type="primary" size="small" @click="comfirmUseTemplate(row)">使用</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
         </el-dialog>
     </el-container>
 </template>
@@ -311,49 +343,6 @@ export default {
             tasks: [],
             lastUpdate: "",
             mainLoading: false,
-            columns: [
-                { dataKey: 'id', title: 'ID', width: 300, align: 'center', fixed: false },
-                { dataKey: 'type', title: '类型', width: 100, align: 'center', },
-                { dataKey: 'name', title: '触发条件', width: 100, align: 'center', },
-                { dataKey: 'action.name', title: '执行操作', width: 100, align: 'center', },
-                {
-                    dataKey: 'status', title: '状态', width: 100, align: 'center',
-                    cellRenderer: (data) => (
-                        h(ElTag, { type: statusMap[data.rowData.status].type }, () => statusMap[data.rowData.status].text)
-                    ),
-                },
-                {
-                    key: '操作',
-                    title: '操作',
-                    width: 250,
-                    align: 'center',
-                    fixed: 'right',
-                    cellRenderer: (data) => (
-                        h("div", {}, [
-                            h(
-                                ElButton,
-                                { onClick: () => { this.handleStart(data.rowData) }, size: "small", type: "success", plain: true, disabled: data.rowData.running || data.rowData.status === 'completed' },
-                                () => "启动"
-                            ),
-                            h(
-                                ElButton,
-                                { onClick: () => { this.handleStop(data.rowData) }, size: "small", type: "warning", plain: true, disabled: !data.rowData.running || data.rowData.status === 'completed' },
-                                () => "停止"
-                            ),
-                            h(
-                                ElButton,
-                                { onClick: () => { this.handleInfo(data.rowData) }, size: "small", plain: true },
-                                () => "详情"
-                            ),
-                            h(
-                                ElButton,
-                                { onClick: () => { this.handleRemove(data.rowData) }, size: "small", type: "danger", plain: true },
-                                () => "移除"
-                            )
-                        ])
-                    ),
-                },
-            ],
             showInfoDialog: false,
             showAddTaskDialog: false,
             showUseTemplateDialog: false,
@@ -752,13 +741,13 @@ export default {
     max-width: none;
 }
 
-.box-card {
+.table-box-card {
     height: 100%;
 }
 
-.box-card .el-card__body {
+.table-box-card .el-card__body {
     padding: 16px;
-    height: 100%;
+    height: calc(100% - 32px);
 }
 
 .task-dialog .el-dialog__body {
@@ -768,6 +757,23 @@ export default {
 
 .info-container .el-row {
     margin-bottom: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .template-dialog {
+        width: 100% !important;
+        max-width: 400px;
+    }
+}
+
+.op-button-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px; 
+}
+
+.op-button-grid > .el-button+.el-button {
+    margin-left: 0;
 }
 </style>
 

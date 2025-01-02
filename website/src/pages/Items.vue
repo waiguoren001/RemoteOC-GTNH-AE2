@@ -129,7 +129,7 @@
                 </div>
             </el-card>
         </el-main>
-        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" style="min-width: 250px; max-width: 400px;"
+        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" class="craft-dialog"
             align-center>
             <el-form :model="craft">
                 <el-form-item label="下单数量">
@@ -461,6 +461,11 @@ export default {
     .item-card {
         flex: 0 0 300px;
     }
+    
+    .craft-dialog {
+        min-width: 250px; 
+        max-width: 400px;
+    }
 }
 
 /* 移动端适配 control-card 高100px */
@@ -473,6 +478,11 @@ export default {
 
     .item-card {
         flex: 0 0 calc(100% - 16px);
+    }
+
+    .craft-dialog {
+        width: 80% !important; 
+        max-width: 400px;
     }
 }
 
