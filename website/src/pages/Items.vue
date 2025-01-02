@@ -77,7 +77,7 @@
                                 <div class="words" :title="item.label">{{ item.label }}</div>
                                 <div class="words" :title="item.size">数量: {{ item.size }}</div>
                                 <div v-if="item.isCraftable"><el-tag size="small" type="success">可合成</el-tag></div>
-                                <el-tooltip placement="top">
+                                <el-tooltip placement="top" effect="dark">
                                     <template #content>
                                         <div style="font-size: 12px; color: #aaa;">Tooltip</div>
                                         <div>{{ item.title }}</div>
@@ -102,7 +102,7 @@
                                         <InfoFilled />
                                     </el-icon>
                                 </el-tooltip>
-                                <el-tooltip placement="top" v-if="item.isCraftable">
+                                <el-tooltip placement="top" effect="dark" v-if="item.isCraftable">
                                     <template #content>
                                         下单制作
                                     </template>

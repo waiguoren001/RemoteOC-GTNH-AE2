@@ -117,7 +117,7 @@
 
 <script>
 import { fetchStatus, addTask, createPollingController } from '@/utils/task'
-import { useTransition } from '@vueuse/core'
+import { useTransition, useDark } from '@vueuse/core'
 import { ref } from 'vue'
 import * as echarts from 'echarts';
 
@@ -163,12 +163,15 @@ export default {
             return parseInt(num.value).toLocaleString()
         }
 
+        const isDark = useDark()
+
         return {
             EUStoredValue,
             totalWirelessEUValue,
             totalItemUsageValue,
             statisticTransition,
-            formatNumber
+            formatNumber,
+            isDark,
         }
     },
     methods: {
@@ -182,6 +185,9 @@ export default {
                         text: this.chartData[index].title,
                         left: 'center',
                         top: 'bottom',
+                        textStyle: {
+                            color: this.isDark ? '#CFD3DC':'#1a1a1a',
+                        }
                     },
                     tooltip: {
                         trigger: 'item',
@@ -193,7 +199,7 @@ export default {
                         top: 'center',
                         z: 10,
                         style: {
-                            fill: '#1a1a1a',
+                            fill: this.isDark ? '#E5EAF3':'#1a1a1a',
                             text: `${(this.chartData[index].data[0]['value'] / this.chartData[index].data[1]['value'] * 100).toFixed(2)}%`,
                             font: '18px'
                         }
@@ -206,7 +212,7 @@ export default {
                             label: {
                                 position: 'center',
                                 fontSize: 20,
-                                color: '#333',
+                                color: this.isDark ? '#E5EAF3':'#333',
                                 show: false,
                             },
                             emphasis: {},
@@ -507,5 +513,13 @@ export default {
 
 .red {
     color: var(--el-color-error);
+}
+</style>
+
+<style>
+html.dark {
+    .statistic-card {
+        background: none;
+    }
 }
 </style>

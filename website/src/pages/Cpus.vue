@@ -520,10 +520,10 @@ export default {
 }
 
 .pending-card {
-    background-color: #f4f2e4;
+    background-color: var(--pending-bg-color);
 }
 
 .active-card {
-    background-color: #d4e5ce;
+    background-color: var(--active-bg-color);
 }
 </style>

@@ -20,10 +20,25 @@
                         <el-checkbox v-model="configValues[config.field]"></el-checkbox>
                     </template>
                     <template v-else-if="config.type === 'password'">
-                        <el-input v-model="configValues[config.field]" type="password" show-password :placeholder="config.placeholder"></el-input>
+                        <el-input v-model="configValues[config.field]" type="password" show-password
+                            :placeholder="config.placeholder"></el-input>
                     </template>
                 </el-form-item>
             </div>
+            <el-form-item label="暗色模式">
+                <el-switch v-model="isDark" @change="toggleDark">
+                    <template #active-action>
+                        <el-icon>
+                            <Moon />
+                        </el-icon>
+                    </template>
+                    <template #inactive-action>
+                        <el-icon>
+                            <Sunny />
+                        </el-icon>
+                    </template>
+                </el-switch>
+            </el-form-item>
             <el-form-item>
                 <el-button type="primary" @click="saveSettings">保存</el-button>
             </el-form-item>
@@ -33,9 +48,18 @@
 
 <script>
 import Setting from '@/utils/setting';
+import { useDark, useToggle } from '@vueuse/core'
 
 export default {
     name: 'Settings',
+    setup() {
+        const isDark = useDark();
+        const toggleDark = useToggle(isDark);
+        return {
+            isDark,
+            toggleDark,
+        };
+    },
     data() {
         const defaultConfigItems = Setting.defaultConfigItems;
         const initialConfigValues = Setting.getAll();
