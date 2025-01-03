@@ -72,7 +72,7 @@ local function removeEmptyItem(items)
 
     local newOne = {}
     for i, item in pairs(items) do
-        if item.size ~= nil or item.amount ~= nil then
+        if item.size ~= nil and item.size ~= 0 or item.amount ~= nil and item.amount ~= 0 then
             table.insert(newOne, simpleItemInfo(item))
         end
         if i % 50 == 0 then
@@ -212,7 +212,16 @@ end
 function ae.getAllSilempleItems(filter)
     -- 获取所有物品简单信息
     local items = me.getItemsInNetwork(filter)
-    return { message = "success", data = removeEmptyItem(items) }
+    local newOne = {}
+    for i, item in pairs(items) do
+        if item.size ~= nil or item.amount ~= nil then
+            table.insert(newOne, simpleItemInfo(item))
+        end
+        if i % 50 == 0 then
+            os.sleep(0)
+        end
+    end
+    return { message = "success", data = newOne}
 end
 
 function ae.getAllItems(filter)

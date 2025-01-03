@@ -7,6 +7,7 @@ local shell = require("shell")
 local env = require("env")
 local logger = require("lib/logger")
 local json = require("lib/json")
+local dumpjson = require("lib/json2")
 
 
 local executor = {}
@@ -195,12 +196,19 @@ function executor.reportResults(taskId, command_result_table)
     }
 
     local headers = getHeaders()
+    -- Error: too long without yielding
+    -- Fix: using dumpjson instead of json.encode
+    local json_data = dumpjson(report_data)
+    logger.debug("Successfully encoded report data.")
+
     -- 向服务器发送报告
     local req = internet.request(
         reportUrl,
-        json.encode(report_data),
+        json_data,
         headers
     )
+    os.sleep(0)
+    logger.debug("Successfully to report")
 
     if not req then
         logger.error("Unable to connect to the server to report results.")
