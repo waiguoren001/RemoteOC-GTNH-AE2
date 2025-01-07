@@ -73,8 +73,8 @@
                             </el-image>
 
                             <div class="item-info">
-                                <div class="ellipsis" :title="item.title">{{ item.title }}</div>
-                                <div class="words" :title="item.label">{{ item.label }}</div>
+                                <div class="ellipsis" :title="item.title" v-html="parseLineColorCode(item.title)"></div>
+                                <div class="words" :title="item.label" v-html="parseLineColorCode(item.label)"></div>
                                 <div class="words">数量:
                                     <NumberFormat :number="item.size" />
                                 </div>
@@ -169,10 +169,11 @@
 <script>
 import { inject } from 'vue';
 import bus from 'vue3-eventbus';
-import { fetchStatus, addTask, createCraftTask, createPollingController } from '@/utils/task'
+import { fetchStatus, addTask, createCraftTask, createPollingController } from '@/utils/task';
 import itemUtil from "@/utils/items";
-import nbt from "@/utils/nbt"
+import nbt from "@/utils/nbt";
 import Setting from '@/utils/setting';
+import { parseLineColorCode } from '@/utils/utils';
 import NumberFormat from '@/components/NumberFormat.vue';
 
 export default {
@@ -216,6 +217,7 @@ export default {
         const isMobile = inject('isMobile');
         return {
             isMobile,
+            parseLineColorCode,
         };
     },
     mounted() {
