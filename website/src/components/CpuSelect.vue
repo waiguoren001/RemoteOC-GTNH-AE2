@@ -103,13 +103,18 @@ export default {
                 }
                 this.lastUpdate = data.completed_time.replace('T', ' ').replace('Z', ' ').split('.')[0];
 
+                let cpuIndex = 0;
                 let cpus = result.data;
                 let cpuList = [];
                 for (let cpu of cpus) {
                     if (this.onlyNamed && cpu.name === "") {
                         continue;
                     }
-                    let name = cpu.name !== "" ? cpu.name : `CPU #${cpuList.length + 1}`;
+                    let name = cpu.name;
+                    if (name === "") {
+                        name = `CPU #${cpuIndex + 1}`;
+                        cpuIndex++;
+                    }
                     cpuList.push({
                         name: name,
                         value: name,

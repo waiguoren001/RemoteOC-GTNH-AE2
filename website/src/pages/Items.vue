@@ -29,9 +29,9 @@
                 <div v-else class="control-bar">
                     <div style="display: flex;">
                         <el-segmented v-model="showCraft" :options="['全部', '可下单']" size="default" />
-                        <el-segmented style="margin: 0 16px;" v-model="showLiquid" :options="['全部', '物品', '液体']" size="default" />
-                        <el-input v-model="searchText"  class="item-search"
-                            placeholder="请输入信息以查询">
+                        <el-segmented style="margin: 0 16px;" v-model="showLiquid" :options="['全部', '物品', '液体']"
+                            size="default" />
+                        <el-input v-model="searchText" class="item-search" placeholder="请输入信息以查询">
                             <template #suffix>
                                 <el-icon class="el-input__icon">
                                     <search />
@@ -75,7 +75,9 @@
                             <div class="item-info">
                                 <div class="ellipsis" :title="item.title">{{ item.title }}</div>
                                 <div class="words" :title="item.label">{{ item.label }}</div>
-                                <div class="words">数量: <NumberFormat :number="item.size" /></div>
+                                <div class="words">数量:
+                                    <NumberFormat :number="item.size" />
+                                </div>
                                 <div v-if="item.isCraftable"><el-tag size="small" type="success">可合成</el-tag></div>
                                 <el-tooltip placement="top" effect="dark">
                                     <template #content>
@@ -129,8 +131,7 @@
                 </div>
             </el-card>
         </el-main>
-        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" class="craft-dialog"
-            align-center>
+        <el-dialog v-model="showCraftDialog" :title="craftDialogTitle" class="craft-dialog" align-center>
             <el-form :model="craft">
                 <el-form-item label="下单数量">
                     <el-input v-model="craft.amount" type="number" placeholder="请输入下单数量" />
@@ -274,6 +275,10 @@ export default {
                             tooltip: item_ && item_.tooltip || [],
                             isCraftable: item.isCraftable,
                             data: data,
+                        }
+                        // 伪合成处理
+                        if (new_item.data && new_item.data.name === 'minecraft:paper' && new_item.label !== 'Paper' && new_item.title === '纸') {
+                            new_item.title = `${new_item.title}(${new_item.label})`
                         }
                         new_items.push(new_item);
                     }
@@ -463,9 +468,9 @@ export default {
     .item-card {
         flex: 0 0 300px;
     }
-    
+
     .craft-dialog {
-        min-width: 250px; 
+        min-width: 250px;
         max-width: 400px;
     }
 }
@@ -483,7 +488,7 @@ export default {
     }
 
     .craft-dialog {
-        width: 80% !important; 
+        width: 80% !important;
         max-width: 400px;
     }
 }
