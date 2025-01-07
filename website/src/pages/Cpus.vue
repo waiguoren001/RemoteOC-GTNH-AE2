@@ -77,9 +77,9 @@
                                         </el-image>
                                         <div class="item-info">
                                             <div class="ellipsis" style="font-size: 20px;">{{ item.label }}</div>
-                                            <div v-if="item.active">正在合成: {{ item.active }}</div>
-                                            <div v-if="item.pending">计划合成: {{ item.pending }}</div>
-                                            <div v-if="item.stored">现存: {{ item.stored }}</div>
+                                            <div v-if="item.active">正在合成: <NumberFormat :number="item.active" /></div>
+                                            <div v-if="item.pending">计划合成: <NumberFormat :number="item.pending" /></div>
+                                            <div v-if="item.stored">现存: <NumberFormat :number="item.stored" /></div>
                                         </div>
                                     </div>
                                 </el-card>
@@ -97,12 +97,15 @@
 <script>
 import bus from 'vue3-eventbus';
 import { inject } from 'vue';
-
 import { fetchStatus, addTask, createPollingController } from '@/utils/task'
 import itemUtil from "@/utils/items";
+import NumberFormat from '@/components/NumberFormat.vue';
 
 export default {
     name: 'Cpus',
+    components: {
+        NumberFormat,
+    },
     data() {
         return {
             loading: true,

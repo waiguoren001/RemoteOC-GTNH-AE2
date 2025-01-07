@@ -75,7 +75,7 @@
                             <div class="item-info">
                                 <div class="ellipsis" :title="item.title">{{ item.title }}</div>
                                 <div class="words" :title="item.label">{{ item.label }}</div>
-                                <div class="words" :title="item.size">数量: {{ item.size }}</div>
+                                <div class="words">数量: <NumberFormat :number="item.size" /></div>
                                 <div v-if="item.isCraftable"><el-tag size="small" type="success">可合成</el-tag></div>
                                 <el-tooltip placement="top" effect="dark">
                                     <template #content>
@@ -168,15 +168,17 @@
 <script>
 import { inject } from 'vue';
 import bus from 'vue3-eventbus';
-
 import { fetchStatus, addTask, createCraftTask, createPollingController } from '@/utils/task'
 import itemUtil from "@/utils/items";
 import nbt from "@/utils/nbt"
 import Setting from '@/utils/setting';
+import NumberFormat from '@/components/NumberFormat.vue';
 
 export default {
     name: 'Items',
-    components: {},
+    components: {
+        NumberFormat,
+    },
     data() {
         return {
             loading: true,

@@ -23,6 +23,9 @@
                         <el-input v-model="configValues[config.field]" type="password" show-password
                             :placeholder="config.placeholder"></el-input>
                     </template>
+                    <template v-else-if="config.type === 'segmented'">
+                        <el-segmented v-model="configValues[config.field]" :options="config.options" />
+                    </template>
                 </el-form-item>
             </div>
             <el-form-item label="暗色模式">

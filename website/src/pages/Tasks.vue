@@ -14,8 +14,8 @@
         </el-header>
         <el-main style="width: 100%; overflow: hidden;" v-loading="mainLoading" element-loading-text="loading">
             <el-card class="table-box-card">
-                <el-table :data="tasks" fit border class="task-table">
-                    <el-table-column prop="taskId" label="任务ID" width="350" align="center" fixed></el-table-column>
+                <el-table :data="tasks" border class="task-table">
+                    <el-table-column prop="taskId" label="任务ID" width="350" align="center"></el-table-column>
                     <el-table-column prop="type" label="类型" width="100" align="center"></el-table-column>
                     <el-table-column prop="data.created_time" label="创建时间" min-width="250"
                         align="center"></el-table-column>

@@ -3,6 +3,7 @@ function Setting() {
         { name: '服务端地址', field: 'backendUrl', type: 'input', placeholder: 'Backend URL', defaultValue: '' },
         { name: '服务端令牌', field: 'token', type: 'password', placeholder: 'Token', defaultValue: '' },
         { name: '页面标题', field: 'pageTitle', type: 'input', placeholder: 'Title', defaultValue: 'GTNH赛博监工' },
+        { name: '数字格式化', field: 'numberFormatting', type: 'segmented', options: ['原始', '千分', '简化'], defaultValue: '千分' },
         { name: '启用监控页面', field: 'showMoniter', type: 'checkbox', tooltip: '选择此选项后，可以显示监控信息<br/>必须在OC客户端中启用并配置moniter插件！', defaultValue: false },
         { name: '液滴显示流体图片', field: 'showFluid', type: 'checkbox', defaultValue: true },
         { name: '下单后刷新CPU', field: 'refreshCPU', type: 'checkbox', tooltip: '选择此选项后，在下单结束会同时返回CPU信息<br/>当需要频繁下单或CPU信息量较大时谨慎选择！', defaultValue: false },
