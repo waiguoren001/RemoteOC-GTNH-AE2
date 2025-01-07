@@ -1,7 +1,13 @@
 <template>
-    <el-descriptions border :column="1" :size="isMobile ? '' : 'large'" :label-width="120" style="margin: 20px;" v-loading="loading">
+    <el-descriptions border :column="1" :size="isMobile ? '' : 'large'" :label-width="120" style="margin: 20px;"
+        v-loading="loading">
         <el-descriptions-item label="Web版本">{{ version }}</el-descriptions-item>
         <el-descriptions-item label="后端版本">{{ meta.version }}</el-descriptions-item>
+        <el-descriptions-item label="OC客户端">
+            <el-text style="cursor: pointer;" @click="handleClientDialog">
+                {{ meta.device_num }}台
+            </el-text>
+        </el-descriptions-item>
         <el-descriptions-item label="开源地址">
             <el-link :href="`${$defaultLinkPrefix}/${$userName}/${$repoName}`" target="_blank" :underline="false">
                 {{ $defaultLinkPrefix }}/{{ $userName }}/{{ $repoName }}
@@ -13,9 +19,13 @@
                 {{ $defaultLinkPrefix }}/{{ $userName }}/{{ $repoName }}/issues
             </el-link>
         </el-descriptions-item>
+        <el-descriptions-item label="接口文档">
+            <el-link :href="`${backendUrl}/docs`" target="_blank"
+                :underline="false">
+                {{ backendUrl }}/docs
+            </el-link>
+        </el-descriptions-item>
         <el-descriptions-item label="许可信息">MIT license</el-descriptions-item>
-        <el-descriptions-item label="OC客户端"><el-text style="cursor: pointer;" @click="handleClientDialog">{{ meta.device_num
-                }}台</el-text></el-descriptions-item>
     </el-descriptions>
     <el-dialog v-model="client.show" class="client-dialog" style="height: 400px;" title="客户端信息" align-center>
         <el-table :data="client.data" v-loading="client.loading" :height="340" width="100%" stripe border>
@@ -28,6 +38,7 @@
 
 <script>
 import { inject } from 'vue';
+import Setting from '@/utils/setting';
 import Requests from '@/utils/requests';
 
 export default {
@@ -35,6 +46,7 @@ export default {
     data() {
         return {
             loading: false,
+            backendUrl: Setting.get('backendUrl'),
             version: __VERSION__,
             meta: {
                 version: "unknown",
