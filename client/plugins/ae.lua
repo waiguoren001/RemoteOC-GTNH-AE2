@@ -1,5 +1,5 @@
 local component = require("component")
-local base64 = require("lib/base64")
+local base64 = require("lib.base64")
 local env = require("env")
 
 local aeAddress = env.aeAddress
@@ -52,7 +52,8 @@ local function simpleItemInfo(item)
         name = item.name,
         label = item.label,
         damage = item.damage,
-        size = item.size
+        size = item.size,
+        isCraftable = item.isCraftable
     }
 end
 
@@ -60,6 +61,9 @@ local function simpleItemsInfo(items)
     if items == nil then return end
     for i, item in pairs(items) do
         items[i] = simpleItemInfo(item)
+        if i % 50 == 0 then
+            os.sleep(0)
+        end
     end
 end
 
@@ -67,9 +71,12 @@ local function removeEmptyItem(items)
     if items == nil then return nil end
 
     local newOne = {}
-    for _, item in pairs(items) do
+    for i, item in pairs(items) do
         if item.size ~= nil and item.size ~= 0 or item.amount ~= nil and item.amount ~= 0 then
             table.insert(newOne, simpleItemInfo(item))
+        end
+        if i % 50 == 0 then
+            os.sleep(0)
         end
     end
     return newOne
@@ -88,7 +95,7 @@ local function getDetailInfo(cpu)
     return result
 end
 
-local function getCpuInfoByName(cpuName)
+function ae.getCpuInfoByName(cpuName)
     if not cpuName or cpuName == "" then
         return { message = "CPU 名称为空" }
     end
@@ -172,7 +179,7 @@ function ae.requestItem(name, damage, amount, cpuName, label)
         result = craftable.request(amount, true)
     else
         -- 检查CPU是否存在并且为空闲状态
-        local cpuInfo = getCpuInfoByName(cpuName)
+        local cpuInfo = ae.getCpuInfoByName(cpuName)
         if cpuInfo.message == "success" then
             if cpuInfo.data.busy then
                 return { message = "CPU 正忙" }
@@ -205,7 +212,16 @@ end
 function ae.getAllSilempleItems(filter)
     -- 获取所有物品简单信息
     local items = me.getItemsInNetwork(filter)
-    return { message = "success", data = removeEmptyItem(items) }
+    local newOne = {}
+    for i, item in pairs(items) do
+        if item.size ~= nil or item.amount ~= nil then
+            table.insert(newOne, simpleItemInfo(item))
+        end
+        if i % 50 == 0 then
+            os.sleep(0)
+        end
+    end
+    return { message = "success", data = newOne}
 end
 
 function ae.getAllItems(filter)

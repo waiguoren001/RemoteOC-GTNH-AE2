@@ -1,17 +1,23 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path"
+import { resolve } from 'path';
+import { readFileSync } from 'fs';
 import compression from 'vite-plugin-compression';
 
-// https://vitejs.dev/config/
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
+
 export default defineConfig({
+    define: {
+        __VERSION__: JSON.stringify(packageJson.version),
+    },
     plugins: [
         vue(),
         compression({
             algorithm: 'gzip', // 指定压缩算法为gzip
             include: /\.jsx?|\.css$/i, // 只压缩JS和CSS文件
             threshold: 1024, // 大于1KB的文件才压缩
-          }),
+        }),
     ],
     base: './',
     resolve: {

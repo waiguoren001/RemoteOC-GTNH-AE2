@@ -12,7 +12,7 @@ import ElementPlus from 'element-plus'
 import locale from 'element-plus/es/locale/lang/zh-cn'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
-// import 'element-plus/theme-chalk/dark/css-vars.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 const app = createApp(App);
 
@@ -35,6 +35,10 @@ function updateDeviceType() {
 window.addEventListener('resize', updateDeviceType);
 app.provide('isMobile', isMobile);
 
+// 全局变量-仓库地址
+app.config.globalProperties.$defaultLinkPrefix = "https://github.com";
+app.config.globalProperties.$userName = "z5882852";
+app.config.globalProperties.$repoName = "RemoteOC-GTNH-AE2";
 
 app.mount('#app')
 

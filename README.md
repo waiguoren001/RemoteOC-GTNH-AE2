@@ -8,8 +8,6 @@
 <h3 align="center">AE2 Control for GTNH 2.6.0</h3>
 
 
-> 当前项目正在开发中。
-
 ## 简介
 
 该项目是一个基于[OpenComputers](https://github.com/MightyPirates/OpenComputers)的GTNH-AE2的远程控制系统，主要用于监控AE2网络、物品、流体、CPU、任务等信息，以及支持远程下单、查看任务等功能。
@@ -23,6 +21,7 @@
 - 支持查看AE2网络内的物品、流体信息
 - 支持查看CPU状态
 - 支持远程下单
+- 支持自动化流程
 - 支持监控兰波顿电容的电量和无线电网电量（需配置）
 - 支持监控物品和流体存储元件的状态（需配置）
 
@@ -32,6 +31,8 @@
 - 支持多个OC客户端
 - 移动端适配
 - 支持自定义任务
+- 暗色模式
+- 高度可定制化
 
 
 ## 安装
@@ -124,12 +125,71 @@ website/   # 网页前端
 
 ### 网页前端
 
-**网页前端需要安装在可公网访问的服务器上**
+#### **1. 使用 Releases 打包好的网页并部署**
+如果您希望快速部署前端，可直接使用打包好的文件，无需进行源码构建。
 
-> 待补充
+1. **下载 Releases 文件**
+   - 访问项目的 Releases 页面：[🔗 **GitHub Releases**](https://github.com/z5882852/RemoteOC-GTNH-AE2/releases)
+   - 下载最新版本的 `RemoteOC_frontend-x.x.x_GTNH-2.x.0.tar.gz` 文件（或类似文件名的构建包）。
+
+2. **上传到服务器**
+   - 将压缩包文件上传到您的服务器（如 Nginx、Apache、或者其他静态资源服务器）。
+   - 解压文件。
+
+3. **配置服务器**
+
+4. **访问网页**
+   - 使用浏览器访问部署的域名。
+
+
+
+#### **3. 克隆源码并构建再部署**
+1. **环境要求**
+   - Node.js: 推荐版本 16.x 或以上
+   - npm 或 yarn: 用于安装依赖
+   - Git: 用于克隆项目
+
+2. **克隆源码**
+   - 使用 Git 克隆项目到本地：
+     ```bash
+     git clone https://github.com/z5882852/RemoteOC-GTNH-AE2.git
+     ```
+   - 进入项目目录：
+     ```bash
+     cd RemoteOC-GTNH-AE2/website
+     ```
+
+3. **安装依赖**
+   - 使用 npm：
+     ```bash
+     npm install
+     ```
+   - 或使用 yarn：
+     ```bash
+     yarn install
+     ```
+
+4. **构建项目**
+   - 运行以下命令以生成静态文件：
+     ```bash
+     npm run build
+     ```
+   - 构建完成后，静态资源将位于 `dist/` 目录中。
+
+5. **部署静态资源**
+   - 将 `dist/` 文件夹中的文件上传到您的服务器（如 Nginx、Apache 或其他静态资源服务器）。
+   - 配置服务器。
+   - 重启服务器后，访问您的域名即可。
+
+
+#### **4. 注意事项**
+- 由于项目是单页面应用程序（SPA），请确保服务器配置了路径重写规则（如 Nginx 中的 `try_files $uri /index.html`）。
 
 
 ## 效果图
+
+<details>
+<summary>点击展开</summary>
 
 ![监控](assets/monitor.png)
 ![物品](assets/items.png)
@@ -137,17 +197,34 @@ website/   # 网页前端
 ![下单](assets/craft.png)
 ![CPU](assets/cpus.png)
 ![任务](assets/tasks.png)
+![自动化](assets/automate.png)
 ![移动端](assets/mobile.png)
+![暗色模式](assets/dark.jpeg)
 
+</details>
 
 ## 扩展插件
 
-> 待补充
+### 1. monitor
+
+#### 功能
+- 监控兰波顿电容的电量和无线电网电量
+- 统计物品和流体存储元件的状态
+
+#### 准备工作
+- ME驱动器需要使用存储总线组成[SSD阵列](https://www.mcmod.cn/post/1296.html), 且物品元件与流体元件需要分开（即2个子网络）
+- 将适配器连接到2个子网的ME控制器/ME接口上
+- 将适配器连接到兰波顿库电容上
+
+#### 配置
+- 修改`AE2StorageUsage.lua`文件中代理地址分别为物品、流体的ME控制器/ME接口地址
+- 修改`powerMonitor.lua`文件中代理地址为兰波顿电容库地址
+- 在网页前端的`设置`中启用监控页面
 
 
 ## 其他
 
-### RemoteOC
+### RemoteOC框架
 
 [https://github.com/z5882852/RemoteOC](https://github.com/z5882852/RemoteOC)
 
@@ -155,7 +232,7 @@ website/   # 网页前端
 
 [https://github.com/sjmulder/nbt-js](https://github.com/sjmulder/nbt-js)
 
-### 物品和流体图标、数据来源
+### 物品和流体图标、数据导出
 
 [https://github.com/RealSilverMoon/nesql-exporter/](https://github.com/RealSilverMoon/nesql-exporter/)
 

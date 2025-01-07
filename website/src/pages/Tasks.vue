@@ -5,23 +5,33 @@
                 <div class="control-bar">
                     <span>最近更新时间: {{ lastUpdate }}</span>
                     <div style="text-align: right;">
-                        <el-button type="primary" :size="isMobile ? 'small': 'large'" @click="openTaskMessageBox">添加任务监控</el-button>
-                        <el-button type="primary" :size="isMobile ? 'small': 'large'" @click="loadTasks">刷新任务列表</el-button>
+                        <el-button type="primary" :size="isMobile ? 'small' : ''"
+                            @click="openTaskMessageBox">添加任务监控</el-button>
+                        <el-button type="primary" :size="isMobile ? 'small' : ''" @click="loadTasks">刷新任务列表</el-button>
                     </div>
                 </div>
             </el-card>
         </el-header>
         <el-main style="width: 100%; overflow: hidden;" v-loading="mainLoading" element-loading-text="loading">
-            <el-card class="box-card">
-                <el-auto-resizer>
-                    <template #default="{ height, width }">
-                        <el-table-v2 
-                            :columns="columns" :data="tasks" 
-                            :width="width" :height="height"
-                            :header-height="50" :row-height="75"  
-                        />
-                    </template>
-                </el-auto-resizer>
+            <el-card class="table-box-card">
+                <el-table :data="tasks" border class="task-table">
+                    <el-table-column prop="taskId" label="任务ID" width="350" align="center"></el-table-column>
+                    <el-table-column prop="type" label="类型" width="100" align="center"></el-table-column>
+                    <el-table-column prop="data.created_time" label="创建时间" min-width="250"
+                        align="center"></el-table-column>
+                    <el-table-column prop="data.pending_time" label="执行时间" min-width="250"
+                        align="center"></el-table-column>
+                    <el-table-column prop="data.completed_time" label="完成时间" min-width="250"
+                        align="center"></el-table-column>
+                    <el-table-column prop="data.status" label="状态" min-width="100" align="center"></el-table-column>
+                    <el-table-column label="操作" width="150" align="center" fixed="right">
+                        <template #default="{ row }">
+                            <el-button @click="handleInfo(row)" size="small">详情</el-button>
+                            <el-button @click="handleRemove(row)" size="small" type="danger">移除</el-button>
+                        </template>
+                    </el-table-column>
+
+                </el-table>
             </el-card>
         </el-main>
         <el-dialog v-model="showInfoDialog" title="任务详情" width="800" align-center>
@@ -49,35 +59,6 @@ export default {
             tasks: [],
             mainLoading: false,
             lastUpdate: "",
-            columns: [
-                { dataKey: 'taskId', title: '任务ID', width: 350, align: 'center', fixed: false },
-                { dataKey: 'type', title: '类型', width: 100, align: 'center', },
-                { dataKey: 'data.created_time', title: '创建时间', width: 250, align: 'center', },
-                { dataKey: 'data.pending_time', title: '执行时间', width: 250, align: 'center', },
-                { dataKey: 'data.completed_time', title: '完成时间', width: 250, align: 'center', },
-                { dataKey: 'data.status', title: '状态', width: 100 },
-                {
-                    key: '操作',
-                    title: '操作',
-                    width: 150,
-                    align: 'center',
-                    fixed: 'right',
-                    cellRenderer: (data) => (
-                        h("div", {}, [
-                            h(
-                                ElButton,
-                                { onClick: () => { this.handleInfo(data.rowData) }, size: "small", },
-                                () => "详情"
-                            ),
-                            h(
-                                ElButton,
-                                { onClick: () => { this.handleRemove(data.rowData) }, size: "small", type: "danger" },
-                                () => "移除"
-                            )
-                        ])
-                    ),
-                },
-            ],
             showInfoDialog: false,
             info: {
                 id: "",
@@ -176,7 +157,16 @@ export default {
     },
 };
 </script>
+<style>
+.task-table {
+    width: 100%;
+    height: 100%;
+}
 
+.task-table tr {
+    height: 60px;
+}
+</style>
 <style>
 .control-header-task {
     width: 100%;
@@ -194,15 +184,6 @@ export default {
 
 .el-popper {
     max-width: 400px;
-}
-
-.box-card {
-    height: 100%;
-}
-
-.box-card .el-card__body {
-    padding: 16px;
-    height: 100%;
 }
 </style>
 
@@ -237,7 +218,7 @@ export default {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
 }
 
 .words {

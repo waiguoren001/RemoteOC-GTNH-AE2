@@ -8,18 +8,13 @@
                         <el-button type="primary" @click="getCpuList">获取CPU信息</el-button>
                     </div>
                     <div v-if="isMobile" class="cpu-select-container">
-                        <el-select-v2 
-                            v-model="selectCpu" 
-                            :options="cpuList"
-                            :props="selectProps"
-                            @change="handleCpuSelect"
-                            placeholder="请选择CPU" 
-                            style="width: 100%"
-                        >
+                        <el-select-v2 v-model="selectCpu" :options="cpuList" :props="selectProps"
+                            @change="handleCpuSelect" placeholder="请选择CPU" style="width: 100%">
                             <template #default="{ item }">
-                                <el-tag v-if="item.busy" type="warning" effect="light">繁忙</el-tag>
-                                <el-tag v-else type="success" effect="light">空闲</el-tag>
-                                <span style="margin-left: 10px;">{{ item.name }}</span>
+                                <CpuItem :item="item" />
+                            </template>
+                            <template #label>
+                                <CpuItem :item="currentCpu" />
                             </template>
                         </el-select-v2>
                     </div>
@@ -71,15 +66,21 @@
                                             </template>
                                             <template #error>
                                                 <el-icon size="40" class="unknow-icon">
-                                        <QuestionFilled />
-                                    </el-icon>
+                                                    <QuestionFilled />
+                                                </el-icon>
                                             </template>
                                         </el-image>
                                         <div class="item-info">
                                             <div class="ellipsis" style="font-size: 20px;">{{ item.label }}</div>
-                                            <div v-if="item.active">正在合成: {{ item.active }}</div>
-                                            <div v-if="item.pending">计划合成: {{ item.pending }}</div>
-                                            <div v-if="item.stored">现存: {{ item.stored }}</div>
+                                            <div v-if="item.active">正在合成:
+                                                <NumberFormat :number="item.active" />
+                                            </div>
+                                            <div v-if="item.pending">计划合成:
+                                                <NumberFormat :number="item.pending" />
+                                            </div>
+                                            <div v-if="item.stored">现存:
+                                                <NumberFormat :number="item.stored" />
+                                            </div>
                                         </div>
                                     </div>
                                 </el-card>
@@ -97,12 +98,17 @@
 <script>
 import bus from 'vue3-eventbus';
 import { inject } from 'vue';
-
 import { fetchStatus, addTask, createPollingController } from '@/utils/task'
 import itemUtil from "@/utils/items";
+import NumberFormat from '@/components/NumberFormat.vue';
+import CpuItem from '@/components/CpuItem.vue';
 
 export default {
     name: 'Cpus',
+    components: {
+        NumberFormat,
+        CpuItem,
+    },
     data() {
         return {
             loading: true,
@@ -226,6 +232,10 @@ export default {
         parseOutputItem(item) {
             let item_ = itemUtil.getItem(item);
             item['image'] = itemUtil.getItemIcon(item_);
+            item['title'] = itemUtil.getName(item_, item);
+            if (item.name === 'minecraft:paper' && item.label !== 'Paper' && item.title === '纸') {
+                item.title = `${item.title}(${item.label})`;
+            }
             return item;
         },
         handleTaskResult(data) {
@@ -246,10 +256,15 @@ export default {
                     const previousCpuName = this.currentCpu?.name;
                     this.currentCpu = { name: undefined, items: [] };
 
+                    let cpuIndex = 0;
                     let cpus = result.data;
                     let cpuList = [];
                     for (let cpu of cpus) {
-                        let name = cpu.name !== "" ? cpu.name : `CPU #${cpuList.length + 1}`;
+                        let name = cpu.name;
+                        if (name === "") {
+                            name = `CPU #${cpuIndex + 1}`;
+                            cpuIndex++;
+                        }
                         cpuList.push({
                             name: name,
                             busy: cpu.busy,
@@ -520,10 +535,10 @@ export default {
 }
 
 .pending-card {
-    background-color: #f4f2e4;
+    background-color: var(--pending-bg-color);
 }
 
 .active-card {
-    background-color: #d4e5ce;
+    background-color: var(--active-bg-color);
 }
 </style>

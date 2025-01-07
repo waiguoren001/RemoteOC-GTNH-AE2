@@ -1,7 +1,11 @@
 from config import timer_task_config, task_config, SERVER_TOKEN
-from utils import *
+from utils.utils import *
+from utils.trigger import trigger_manager
+from utils.task import task_manager
+from utils.device import device_manager
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request
 from models import *
+import json
 import re
 import uuid
 import gzip
@@ -25,6 +29,7 @@ async def get_commands(x_client_id: Optional[str] = Header(None, description="�
     """
     task_id = None
     task_list = task_manager.list_tasks()
+    device_manager.record_device(x_client_id)
 
     for tid in task_list:
         task = task_manager.get_task(tid)
@@ -45,7 +50,7 @@ async def get_commands(x_client_id: Optional[str] = Header(None, description="�
 
 
 @router.post("/chunked_report", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
-async def receive_chunked_report(request: Request, chunked: int = Query(-1, description="是否为分块上传，1表示开始，0表示结束，>1 表示继续上传")):
+async def receive_chunked_report(request: Request, chunked: int = Query(-1, description="是否为分块上传，1表示开始，0表示结束，>1 表示继续上传"), x_client_id: Optional[str] = Header(None, description="客户端id")):
     """
     接收客户端的任务执行后的结果, 仅用于分块上传
     """
@@ -91,6 +96,7 @@ async def receive_chunked_report(request: Request, chunked: int = Query(-1, desc
 
     # 为0时，表示接收完成，合并数据并更新任务状态为 COMPLETED
     elif chunked == 0:
+        device_manager.record_device(x_client_id, 'chunked_report')
         task = task_manager.get_task(task_id)
         if task and "results" in task:
             existing_results = task.get("results", [])
@@ -117,7 +123,7 @@ async def receive_chunked_report(request: Request, chunked: int = Query(-1, desc
 
 
 @router.post("/report", response_model=StandardResponseModel, dependencies=[Depends(token_required)])
-async def receive_report(request: Request):
+async def receive_report(request: Request, x_client_id: Optional[str] = Header(None, description="客户端id")):
     """
     接收客户端的任务执行后的结果
     """
@@ -132,13 +138,14 @@ async def receive_report(request: Request):
     except UnicodeDecodeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    device_manager.record_device(x_client_id, 'report')
     task_id = command_result.task_id
     results = command_result.results
 
     if not task_manager.task_exists(task_id):
         raise HTTPException(status_code=404, detail="Task not found")
 
-    for config in [timer_task_config, task_config]:
+    for config in [timer_task_config, task_config, trigger_manager.get_tasks()]:
         if task_id in config:
             handle = config.get(task_id, {}).get("handle")
             if handle:

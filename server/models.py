@@ -38,3 +38,26 @@ class AddTaskByNameModel(BaseModel):
 class AddTaskResponseModel(BaseModel):
     task_id: str = Field(..., description="任务的唯一标识符，成功添加任务后由系统生成")
     message: str = Field(..., description="任务添加成功后的确认消息，通常描述任务名和命令数")
+
+# 定义触发器添加请求模型
+class AddTriggerModel(BaseModel):
+    name: str = Field(..., description="触发器的名称")
+    action: str = Field(..., description="触发器的操作名称")
+    trigger_kwargs: dict = Field(..., description="触发器的参数")
+    action_kwargs: dict = Field(..., description="操作的参数")
+    interval: Optional[int] = Field(None, description="触发器的间隔时间")
+
+# 定义触发器请求模型，用于触发器的查询和删除
+class TriggerRequestModel(BaseModel):
+    trigger_task_id: str = Field(..., description="触发器任务 ID")
+
+# 定义定时器添加请求模型
+class AddTimerModel(BaseModel):
+    name: str = Field(..., description="定时器的名称")
+    action: str = Field(..., description="定时器的操作名称")
+    trigger_kwargs: dict = Field(..., description="定时器的参数")
+    action_kwargs: dict = Field(..., description="操作的参数")
+
+# 定义定时器请求模型，用于定时器的查询和删除
+class TimerRequestModel(BaseModel):
+    timer_id: str = Field(..., description="定时器 ID")

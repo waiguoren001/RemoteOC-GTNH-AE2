@@ -28,6 +28,7 @@ local function pollServer()
 
         -- 获取命令和 taskId
         local taskId, command_table, isChunked = executor.fetchCommands()
+        os.sleep(0)
 
         if isChunked then
             logger.debug("Using chunked upload")
@@ -36,6 +37,7 @@ local function pollServer()
         if taskId and command_table then
             -- 处理命令并获取结果
             local command_result_table = executor.processCommands(command_table, isChunked)
+            os.sleep(0)
 
             logger.debug("Reporting results for Task ID: " .. tostring(taskId))
             -- 将执行结果和 taskId 一起报告回服务器
