@@ -3,7 +3,11 @@ from dotenv import load_dotenv
 from callback import *
 from action import *
 
+__version__ = "1.1.0"
+
 # 加载 .env 文件中的环境变量
+if os.path.exists('.env.dev'):
+    load_dotenv('.env.dev')
 load_dotenv()
 
 

@@ -7,6 +7,7 @@
         <el-menu-item index="Tasks">任务</el-menu-item>
         <el-menu-item index="Automate">自动化</el-menu-item>
         <el-menu-item index="Settings">设置</el-menu-item>
+        <el-menu-item index="Info">信息</el-menu-item>
     </el-menu>
 </template>
 

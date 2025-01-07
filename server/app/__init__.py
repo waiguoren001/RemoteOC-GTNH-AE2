@@ -3,11 +3,13 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import StandardResponseModel
+from config import __version__
 from .task import router as commands_router
 from .automate import router as automate_router
+from .info import router as info_router
 
 
-app = FastAPI(title="RemoteOC", description="RemoteOC的服务端", version="1.0.0")
+app = FastAPI(title="RemoteOC", description="RemoteOC的服务端", version=__version__)
 
 
 @app.exception_handler(HTTPException)
@@ -36,3 +38,5 @@ app.add_middleware(
 
 app.include_router(commands_router, prefix="/api/task", tags=["task"])
 app.include_router(automate_router, prefix="/api/automate", tags=["automate"])
+app.include_router(info_router, prefix="/api/info", tags=["info"])
+

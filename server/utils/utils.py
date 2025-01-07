@@ -3,8 +3,8 @@ import os
 from dotenv import load_dotenv
 
 
-if os.path.exists('.env.dev'):
-    load_dotenv('.env.dev')
+if os.path.exists(".env.dev"):
+    load_dotenv(".env.dev")
 
 load_dotenv()
 
@@ -15,7 +15,7 @@ levels = {
     "ERROR": logging.ERROR,
     "CRITICAL": logging.CRITICAL,
 }
-LOG_LEVEL = levels.get(os.getenv('LOG_LEVEL'), "INFO")
+LOG_LEVEL = levels.get(os.getenv("LOG_LEVEL"), "INFO")
 
 logging.basicConfig(
     level=LOG_LEVEL,
@@ -24,13 +24,10 @@ logging.basicConfig(
 logger = logging.getLogger("uvicorn.error")
 
 # 任务状态常量
-READY = 'ready'
-PENDING = 'pending'
-UPLOADING = 'uploading'
-COMPLETED = 'completed'
-
-
-
+READY = "ready"
+PENDING = "pending"
+UPLOADING = "uploading"
+COMPLETED = "completed"
 
 
 def decode_request_body(body: bytes) -> str:
@@ -42,12 +39,12 @@ def decode_request_body(body: bytes) -> str:
     """
     # 尝试使用 utf-8 解码
     try:
-        decoded_body = body.decode('utf-8')
+        decoded_body = body.decode("utf-8")
         return decoded_body
     except UnicodeDecodeError:
         # 如果 utf-8 解析失败，尝试使用 gbk 解析
         try:
-            decoded_body = body.decode('gbk')
+            decoded_body = body.decode("gbk")
             logger.debug("utf-8 解析失败，使用 gbk 解析请求体")
             return decoded_body
         except UnicodeDecodeError as e:
