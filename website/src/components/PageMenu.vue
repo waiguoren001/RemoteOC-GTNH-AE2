@@ -1,13 +1,13 @@
 <template>
     <el-menu default-active="Index" class="el-menu-vertical-page" @select="handleSelect" style="height: 100%;">
-        <el-menu-item index="Index">主页</el-menu-item>
-        <el-menu-item v-if="showMoniter" index="Monitor">监控</el-menu-item>
-        <el-menu-item index="Items">终端</el-menu-item>
-        <el-menu-item index="Cpus">CPU</el-menu-item>
-        <el-menu-item index="Tasks">任务</el-menu-item>
-        <el-menu-item index="Automate">自动化</el-menu-item>
-        <el-menu-item index="Settings">设置</el-menu-item>
-        <el-menu-item index="Info">信息</el-menu-item>
+        <el-menu-item index="Index"><el-icon><House /></el-icon>主页</el-menu-item>
+        <el-menu-item v-if="showMoniter" index="Monitor"><el-icon><DataLine /></el-icon>监控</el-menu-item>
+        <el-menu-item index="Items"><el-icon><MessageBox /></el-icon>终端</el-menu-item>
+        <el-menu-item index="Cpus"><el-icon><Cpu /></el-icon>CPU</el-menu-item>
+        <el-menu-item index="Tasks"><el-icon><Tickets /></el-icon>任务</el-menu-item>
+        <el-menu-item index="Automate"><el-icon><AlarmClock /></el-icon>自动化</el-menu-item>
+        <el-menu-item index="Settings"><el-icon><Setting /></el-icon>设置</el-menu-item>
+        <el-menu-item index="Info"><el-icon><Warning /></el-icon>信息</el-menu-item>
     </el-menu>
 </template>
 
