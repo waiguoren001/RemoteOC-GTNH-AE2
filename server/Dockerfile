@@ -3,7 +3,7 @@ FROM python:3.10-slim
 RUN apt-get install ca-certificates
 
 # 拷贝当前项目到/app目录下（.dockerignore中文件除外）
-COPY server /app
+COPY . /app
 
 # 设定当前的工作目录
 WORKDIR /app

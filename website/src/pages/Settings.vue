@@ -73,17 +73,17 @@ export default {
     },
     methods: {
         saveSettings() {
-
-            this.$confirm('是否立即刷新网页以应用更改？', '确认', {
+            this.$confirm('是否刷新网页以应用更改？', '确认', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning',
             }).then(() => {
-                location.reload();
-            }).catch(() => {
                 Object.keys(this.configValues).forEach(field => {
                     Setting.set(field, this.configValues[field]);
                 });
+                location.reload();
+            }).catch(() => {
+                console.log('取消保存');
             });
         },
     },
