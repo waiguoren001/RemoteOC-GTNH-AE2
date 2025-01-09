@@ -6,7 +6,7 @@
         </el-check-tag>
     </el-tooltip>
 
-    <el-dialog v-model="showInfoDialog" title="任务详情" width="800" align-center>
+    <el-dialog v-model="showInfoDialog" title="任务详情" align-center class="info-dialog">
         <el-text>任务ID: <span>{{ info.id }}</span></el-text>
         <div class="info-container">
             <code>
@@ -81,6 +81,15 @@ export default {
     },
 };
 </script>
+
+<style>
+@media screen and (max-width: 768px) {
+    .info-dialog {
+        width: 100% !important;
+        max-width: 500px;
+    }
+}
+</style>
 
 <style scoped>
 pre {
