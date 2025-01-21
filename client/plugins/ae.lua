@@ -86,7 +86,8 @@ local function getDetailInfo(cpu)
     local sub = cpu.cpu
     local result = {
         activeItems = removeEmptyItem(sub.activeItems()),
-        finalOutput = sub.finalOutput(),
+        -- fix: 当itme存在tag时，编码错误
+        finalOutput = simpleItemInfo(sub.finalOutput()),
         active = sub.isActive(),
         busy = sub.isBusy(),
         pendingItems = removeEmptyItem(sub.pendingItems()),
