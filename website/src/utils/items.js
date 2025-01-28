@@ -24,7 +24,7 @@ const itemUtil = {
 
     loadItems(progressCallback) {
         if (!this.items) {
-            let url = (Setting.get("cdnPath")) + "/items.json";
+            let url = (Setting.get("resourceUrl")) + "/items_GTNH270.json";
             if (Setting.get("useGzip")) {
                 url += ".gz";
             }
@@ -55,7 +55,7 @@ const itemUtil = {
 
     loadFluids(progressCallback) {
         if (!this.fluids) {
-            let url = (Setting.get("cdnPath")) + "/fluids.json";
+            let url = (Setting.get("resourceUrl")) + "/fluids_GTNH270.json";
             if (Setting.get("useGzip")) {
                 url += ".gz";
             }
@@ -104,7 +104,7 @@ const itemUtil = {
 
     getName(item, originItem, data) {
         if (item) {
-            let name = item && item.zh ? item.zh : item.en;
+            let name = item && item.zh ? item.zh : originItem.label;
             if (originItem.name === "ae2fc:fluid_drop") {
                 if (data && data.tag) {
                     try {
@@ -119,13 +119,16 @@ const itemUtil = {
                     name = originItem.label.replace("drop of ", "");
                 }
             }
+            if (originItem.name === 'minecraft:paper' && originItem.label !== 'Paper' && name === '纸') {
+                name = `${name} (${originItem.label})`;
+            }
             return name;
         }
-        return null;
+        return originItem.label;
     },
 
     getItemIcon: (item) => {
-        if (item) {
+        if (item && item.img_path) {
             return "img/items/" + item.img_path;
         }
         return "img/default.png";

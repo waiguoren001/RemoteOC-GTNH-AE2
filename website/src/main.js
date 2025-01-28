@@ -39,6 +39,8 @@ app.provide('isMobile', isMobile);
 app.config.globalProperties.$defaultLinkPrefix = "https://github.com";
 app.config.globalProperties.$userName = "z5882852";
 app.config.globalProperties.$repoName = "RemoteOC-GTNH-AE2";
+// GTNH版本
+app.config.globalProperties.$gameVersion = "2.7.0";
 
 app.mount('#app')
 
