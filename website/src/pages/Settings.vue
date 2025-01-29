@@ -26,6 +26,9 @@
                     <template v-else-if="config.type === 'segmented'">
                         <el-segmented v-model="configValues[config.field]" :options="config.options" />
                     </template>
+                    <template v-else-if="config.type === 'title'">
+                        <el-divider content-position="left" size="large">{{ config.title }}</el-divider>
+                    </template>
                 </el-form-item>
             </div>
             <el-form-item label="暗色模式">

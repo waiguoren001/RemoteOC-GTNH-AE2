@@ -5,6 +5,7 @@ import Setting from '@/utils/setting';
 const itemUtil = {
     items: null,
     fluids: null,
+    version: "2.7.0",
 
     loadWithProgress(url, progressCallback) {
         axios.get(url, {
@@ -24,7 +25,7 @@ const itemUtil = {
 
     loadItems(progressCallback) {
         if (!this.items) {
-            let url = (Setting.get("resourceUrl")) + "/items_GTNH270.json";
+            let url = (Setting.get("resourceUrl")) + `/items_GTNH${this.version.replace(/\./g, "")}.json`;
             if (Setting.get("useGzip")) {
                 url += ".gz";
             }
@@ -55,7 +56,7 @@ const itemUtil = {
 
     loadFluids(progressCallback) {
         if (!this.fluids) {
-            let url = (Setting.get("resourceUrl")) + "/fluids_GTNH270.json";
+            let url = (Setting.get("resourceUrl")) + `/fluids_GTNH${this.version.replace(/\./g, "")}.json`;
             if (Setting.get("useGzip")) {
                 url += ".gz";
             }

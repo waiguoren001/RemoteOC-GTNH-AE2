@@ -44,3 +44,4 @@ app.config.globalProperties.$gameVersion = "2.7.0";
 
 app.mount('#app')
 
+export default app;
