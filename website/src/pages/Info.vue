@@ -1,11 +1,12 @@
 <template>
     <el-descriptions border :column="1" :size="isMobile ? '' : 'large'" :label-width="120" style="margin: 20px;"
         v-loading="loading">
+        <el-descriptions-item label="GTNH版本">{{ $gameVersion }}</el-descriptions-item>
         <el-descriptions-item label="Web版本">{{ version }}</el-descriptions-item>
         <el-descriptions-item label="后端版本">{{ meta.version }}</el-descriptions-item>
         <el-descriptions-item label="OC客户端">
             <el-text style="cursor: pointer;" @click="handleClientDialog">
-                {{ meta.device_num }}台
+                {{ meta.device_num }}台 (点击查看详情)
             </el-text>
         </el-descriptions-item>
         <el-descriptions-item label="开源地址">

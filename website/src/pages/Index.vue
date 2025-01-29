@@ -13,7 +13,7 @@
             <el-space direction="vertical" style="gap: 24px 0px">
                 <el-text class="title" size="large">GTNH赛博监工</el-text>
                 <el-text size="large">基于 OpenComputers 的 GTNH AE2 远程控制框架</el-text>
-                <el-text size="large">当前版本 <el-tag size="large">GTNH 2.6.0</el-tag></el-text>
+                <el-text size="large">当前版本 <el-tag size="large">GTNH {{ $gameVersion }}</el-tag></el-text>
 
                 <div class="link-grid">
                     <el-link :href="`${$defaultLinkPrefix}/${$userName}/${$repoName}`" target="_blank" :underline="false">
