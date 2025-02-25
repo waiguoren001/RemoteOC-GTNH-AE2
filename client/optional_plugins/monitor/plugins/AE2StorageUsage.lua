@@ -5,6 +5,9 @@ local item = require("item")
 local fluid_me = component.proxy("9ea46828-732a-4321-8423-193b54450ce2")
 local item_me = component.proxy("6a4fb14a-a9e8-498f-a16c-320f377ce7e8")
 
+if not fluid_me or not item_me then
+    error("Could not find ME network, please check the network address.")
+end
 
 --- 计算AE2流体存储元件的存储使用量和总容量。
 --
@@ -54,6 +57,9 @@ function calculate_fluid_me_totals()
     local total_units = 0
 
     for _, cell in ipairs(fluid_me.getItemsInNetwork()) do
+        if not item.hasTag(cell) then
+            goto continue
+        end
         local data = item.readTag(cell)
 
         local ft = tonumber(data["ft"]) or 0
@@ -68,6 +74,8 @@ function calculate_fluid_me_totals()
         total_available_types = total_available_types + (types * size)
 
         total_units = total_units + size
+
+        ::continue::
     end
 
     return {
