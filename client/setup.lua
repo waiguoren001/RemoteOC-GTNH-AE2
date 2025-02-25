@@ -13,6 +13,7 @@ local scripts = {
     'env.lua',
     'lib/logger.lua',
     'lib/json.lua',
+    'lib/json2.lua',
     'lib/base64.lua',
     'src/executor.lua',
     'plugins/ae.lua',

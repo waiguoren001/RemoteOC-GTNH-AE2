@@ -45,12 +45,112 @@ server/    # 服务端
 website/   # 网页前端
 ```
 
+### 使用 Docker 一键部署前后端
+
+1. **准备工作**
+
+    - 安装`Docker`和`Docker Compose`
+    - 下载仓库中的`docker-compose.yml`和`server/.env`文件
+
+2. **修改配置**
+
+    - 根据想要修改`docker-compose.yml`文件中的环境变量
+    - 修改`.env`文件中的环境变量
+
+3. **启动服务**
+
+    ```bash
+    docker-compose up -d
+    ```
+    > 默认前端端口为`80`，可直接访问，后端端口为`8080`，可在`docker-compose.yml`中修改
+  
+4. **查看日志**
+
+    ```bash
+    docker-compose logs -f
+    ```
+
+5. **停止服务**
+
+    ```bash
+    docker-compose down
+    ```
+
+### 手动构建后端 Docker 镜像
+
+
+1. **准备工作**
+
+    - 安装 `Docker`
+
+2. **克隆源码**
+
+   - 使用 Git 克隆项目到本地：
+     ```bash
+     git clone https://github.com/z5882852/RemoteOC-GTNH-AE2.git
+     ```
+   - 进入项目目录：
+     ```bash
+     cd RemoteOC-GTNH-AE2/server
+     ```
+
+3. **构建镜像**
+
+    ```bash
+    docker build -t roc-gtnh-backend .
+    ```
+
+4. **运行容器**
+
+    ```bash
+    docker run -d --name roc-gtnh-backend -p 8080:8080 roc-gtnh-backend
+    ```
+
+5. **查看日志**
+
+    ```bash
+    docker logs -f roc-gtnh-backend
+    ```
+
 ### 服务器端
 
 **服务器端需要安装在可公网访问的服务器上**
 
-具体步骤请查看 [RemoteOC#服务端部署](https://github.com/z5882852/RemoteOC?tab=readme-ov-file#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%83%A8%E7%BD%B2)
+1. **准备工作**
 
+    - 安装`Python3`和`pip`
+
+2. **克隆源码**
+   - 使用 Git 克隆项目到本地：
+     ```bash
+     git clone https://github.com/z5882852/RemoteOC-GTNH-AE2.git
+     ```
+   - 进入项目目录：
+     ```bash
+     cd RemoteOC-GTNH-AE2/server
+     ```
+
+3. **安装依赖**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **修改配置**
+
+    - 根据需要修改`.env`文件中的环境变量
+    - 根据需要修改`config.py`文件中的配置
+
+5. **运行服务**
+
+    ```bash
+    python run.py
+    ```
+
+    指定端口运行服务
+    ```bash
+    python run.py --port 8080
+    ```
 
 ### OC客户端
 
